@@ -1,0 +1,15 @@
+.*
+\#*
+*~
+*#
+TAGS
+*.py?
+.tox
+build
+exported-artifacts
+dist
+*.egg
+*.egg-info
+AUTHORS
+ChangeLog
+testr_*_log
