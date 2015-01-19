@@ -266,5 +266,6 @@ class IsoStore(ArtifactStore):
         """
         passphrase = self.sign_passphrase
         for iso in self.get_artifacts():
+            logger.info('Signing %s', iso)
             iso.sign(self.sign_key, passphrase)
         logger.info("Done signing")

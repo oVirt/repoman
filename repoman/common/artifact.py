@@ -78,7 +78,7 @@ class Artifact(object):
         # that if you have two rpms with the same full_name they must package
         # the same content or one of them is wrongly generated (the version was
         # not bumped or something)
-        self.full_name = 'artifact(%s %s %s)' % (
+        self.full_name = '%s(%s %s)' % (
             self.type, self.name, self.version,
         )
 
@@ -96,7 +96,7 @@ class Artifact(object):
 
     @abstractproperty
     def type(self):
-        pass
+        return 'artifact'
 
     @property
     def md5(self):
@@ -132,8 +132,8 @@ class Artifact(object):
         it, if not, you wrongly generated two artifact with the same
         version/name and different content
         """
-        return 'artifact(%s %s %s)' % (
-            self.name, self.version, self.extension,
+        return '%s(%s %s %s)' % (
+            self.type, self.name, self.version, self.extension,
         )
 
     def __repr__(self):
