@@ -158,7 +158,13 @@ def download(path, dest_path):
     prev_percent = 0
     progress = 0
     if length:
-        sys.stdout.write('    %[')
+        sys.stdout.write(
+            '    %['
+            + '-' * 23 + '25' + '-' * 24
+            + '50'
+            + '-' * 23 + '75' + '-' * 24
+            + ']\r' + '    %['
+        )
     sys.stdout.flush()
     with open(dest_path, 'w') as rpm_fd:
         for chunk in stream.iter_content(chunk_size=chunk_size):
