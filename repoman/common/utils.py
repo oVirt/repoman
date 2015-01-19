@@ -155,6 +155,15 @@ def download(path, dest_path):
     num_dots = 100
     dot_frec = (length / num_dots) or 1
     stream = requests.get(path, stream=True)
+    tries = 3
+    while not stream and tries:
+        stream = requests.get(path, stream=True)
+        tries -= 1
+    if not tries:
+        raise Exception(
+            'Failed to download %s\n\tcode: %d\n\treason: %s' %
+            (stream.url, stream.status_code, stream.reason)
+        )
     prev_percent = 0
     progress = 0
     if length:
