@@ -80,9 +80,8 @@ class URLSource(ArtifactSource):
             return "{2}".format(*split_url)
 
     @staticmethod
-    def get_link(page_url, link, internal=False):
+    def get_link(page_url, link_url, internal=False):
         page_url = URLSource.strip_qs(page_url)
-        link_url = URLSource.strip_qs(link)
         if not re.match('https?://', link_url):
             link_url = urljoin(page_url, link_url)
         if link_url.startswith(page_url):
