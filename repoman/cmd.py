@@ -37,7 +37,7 @@ def parse_args():
     parser.add_argument('-k', '--key', required=False,
                         help='Path to the key to use when signing, will '
                         'not sign any rpms if not passed.')
-    parser.add_argument('--passphrase', required=False,
+    parser.add_argument('--passphrase', required=False, default='ask',
                         help='Passphrase to unlock the singing key')
     parser.add_argument('--with-sources', required=False, action='store_true',
                         help='Generate the sources tree.')
