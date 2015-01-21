@@ -195,6 +195,7 @@ class RPM(Artifact):
                 '-D', '_gpg_name %s' % keyuid,
                 self.path,
             ],
+            timeout=600,  # rpmsign may take a lot of time...
         )
         child.expect('Enter pass phrase: ')
         child.sendline(passwd)
