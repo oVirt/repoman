@@ -249,7 +249,7 @@ def extract_sources(rpm_path, dst_dir, with_patches=False):
 def sign_detached(src_dir, key, passphrase=None):
     """
     Create the detached signatures for the files in the specified dir.
-    :param src_dir: Sources directory
+    :param src_dir: File to sign or directory with files to sign (recursively)
     :param key: Key to sign the sources with
     :param passphrase: Passphrase for the given key
     """
@@ -285,7 +285,7 @@ def sign_detached(src_dir, key, passphrase=None):
                     sfd.write(signature.data)
     else:
         fname = src_dir
-        with open(key) as fd:
+        with open(fname) as fd:
             signature = gpg.sign_file(
                 fd,
                 keyid=keyid,
