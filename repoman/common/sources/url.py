@@ -75,9 +75,9 @@ class URLSource(ArtifactSource):
     def strip_qs(url):
         split_url = urlsplit(url)
         if split_url.scheme:
-            return "{0}://{1}{2}".format(*split_url)
+            return "{0}://{1}{2}/".format(*split_url)
         else:
-            return "{2}".format(*split_url)
+            return "{2}/".format(*split_url)
 
     @staticmethod
     def get_link(page_url, link_url, internal=False):
