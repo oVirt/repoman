@@ -50,9 +50,9 @@ def parse_args():
     add_rpm.add_argument(
         'artifact_source', nargs='+',
         help=(
-            'An artifact source to add, it can be one of: '
-            + ', '.join(', '.join(source.formats_list())
-                        for source in SOURCES.itervalues())
+            'An artifact source to add, it can be one of: ' +
+            ', '.join(', '.join(source.formats_list())
+                      for source in SOURCES.itervalues())
         )
     )
 
@@ -137,7 +137,6 @@ def main():
         for art_src in args.artifact_source:
             repo.add_source(art_src)
         logger.info('')
-        repo.save()
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')
     elif args.repoaction == 'remove-old':

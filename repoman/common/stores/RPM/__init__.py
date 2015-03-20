@@ -260,8 +260,10 @@ class RPMStore(ArtifactStore):
         for distro in self.distros:
             logger.info('Creating metadata for %s', distro)
             dst_dir = self.path + '/rpm/' + distro
-            new_proc = mp.Process(target=self.createrepo,
-                                  args=(dst_dir,))
+            new_proc = mp.Process(
+                target=self.createrepo,
+                args=(dst_dir,),
+            )
             new_proc.start()
             procs.append(new_proc)
         for proc in procs:
@@ -315,7 +317,12 @@ class RPMStore(ArtifactStore):
         """
         Sign all the unsigned rpms in the repo.
         """
-        gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+        try:
+            # older gnupg versions
+            gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+        except TypeError:
+            gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
+
         key = self.sign_key
         passphrase = self.sign_passphrase
         try:

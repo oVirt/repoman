@@ -3,3 +3,8 @@ gnupg
 requests
 urllib3
 pbr>=0.8.2,<1.0
+six
+pexpect
+# Needed but not in pip, install rpm-python
+# will use system installed lib for the functional tests
+#rpm_python

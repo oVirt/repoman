@@ -231,9 +231,10 @@ class RPMName(ArtifactName):
     """List of available versions for a package name"""
     def add_pkg(self, pkg, onlyifnewer):
         if onlyifnewer and (
-                pkg.ver_rel in self
-                or next((ver for ver in self.keys()
-                         if cmpfullver(ver, pkg.ver_rel) >= 0), None)):
+            pkg.ver_rel in self or
+            next((ver for ver in self.keys()
+                  if cmpfullver(ver, pkg.ver_rel) >= 0), None)
+        ):
             return False
         elif pkg.ver_rel not in self:
             self[pkg.ver_rel] = ArtifactVersion(pkg.ver_rel)

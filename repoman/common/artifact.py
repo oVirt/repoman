@@ -201,9 +201,15 @@ class ArtifactName(dict, object):
 
     def add_artifact(self, artifact, onlyifnewer):
         if onlyifnewer and (
-                artifact.ver_rel in self
-                or next((ver for ver in self.keys()
-                         if cmpfullver(ver, artifact.version) >= 0), None)):
+            artifact.ver_rel in self or
+            next(
+                (
+                    ver for ver in self.keys()
+                    if cmpfullver(ver, artifact.version) >= 0
+                ),
+                None,
+            )
+        ):
             return False
         elif artifact.version not in self:
             self[artifact.version] = self.version_class(artifact.version)

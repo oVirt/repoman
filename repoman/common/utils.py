@@ -19,7 +19,11 @@ class NotSamePackage(Exception):
 
 
 def gpg_get_keyuid(key_path):
-    gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+    try:
+        # older gnupg
+        gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+    except TypeError:
+        gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
     with open(key_path) as key_fd:
         skey = gpg.import_keys(key_fd.read())
         fprint = skey.results[0]['fingerprint']
@@ -45,8 +49,8 @@ def get_plugins(plugin_dir=None):
         if module.endswith('.py'):
             modules.append(os.path.basename(module)[:-3])
         elif (
-            os.path.isdir(module)
-            and os.path.isfile(module + '/__init__.py')
+            os.path.isdir(module) and
+            os.path.isfile(module + '/__init__.py')
         ):
             modules.append(os.path.basename(module))
     return modules
@@ -168,11 +172,11 @@ def download(path, dest_path):
     progress = 0
     if length:
         sys.stdout.write(
-            '    %['
-            + '-' * 23 + '25' + '-' * 24
-            + '50'
-            + '-' * 23 + '75' + '-' * 24
-            + ']\r' + '    %['
+            '    %[' +
+            '-' * 23 + '25' + '-' * 24 +
+            '50' +
+            '-' * 23 + '75' + '-' * 24 +
+            ']\r' + '    %['
         )
     sys.stdout.flush()
     with open(dest_path, 'w') as rpm_fd:
@@ -240,10 +244,46 @@ def extract_sources(rpm_path, dst_dir, with_patches=False):
                 stderr=devnull,
             )
         rpm2cpio.stdout.close()
-        cpio.communicate()
+        (stdout, stderr) = cpio.communicate()
+        if cpio.returncode != 0:
+            raise Exception(
+                "Failed to extract sources:\n== STDOUT:\n%s\n== STDERR:\n%s",
+                stdout,
+                stderr,
+            )
     finally:
         os.chdir(oldpath)
         os.remove(dst_path)
+
+
+def sign_file(gpg, fname, keyid, passphrase, detach=True):
+    with open(fname) as f_desc:
+        try:
+            # old gnupg
+            signature = gpg.sign_func(
+                f_desc,
+                keyid=keyid,
+                passphrase=passphrase,
+                detach=True,
+                binary=False,
+            )
+        except AttributeError:
+            signature = gpg.sign(
+                data=f_desc,
+                default_key=keyid,
+                passphrase=passphrase,
+                detach=True,
+                clearsign=False,
+                binary=False,
+            )
+    if not signature.data:
+        raise Exception(
+            "Failed to sign file %s: \n%s",
+            file,
+            signature.stderr
+        )
+    with open(fname + '.sig', 'w') as sfd:
+        sfd.write(signature.data)
 
 
 def sign_detached(src_dir, key, passphrase=None):
@@ -256,7 +296,11 @@ def sign_detached(src_dir, key, passphrase=None):
     oldpath = os.getcwd()
     if not src_dir.startswith('/'):
         src_dir = oldpath + '/' + src_dir
-    gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+    try:
+        # older gnupg
+        gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+    except TypeError:
+        gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
     with open(key) as key_fd:
         skey = gpg.import_keys(key_fd.read())
     fprint = skey.results[0]['fingerprint']
@@ -269,35 +313,20 @@ def sign_detached(src_dir, key, passphrase=None):
             for fname in files:
                 if fname.endswith('.sig'):
                     continue
-                fname = os.path.join(dname, fname)
-                with open(fname) as fd:
-                    signature = gpg.sign_file(
-                        fd,
-                        keyid=keyid,
-                        passphrase=passphrase,
-                        detach=True,
-                    )
-                if not signature.data:
-                    raise Exception("Failed to sign file %s: \n%s",
-                                    file,
-                                    signature.stderr)
-                with open(fname + '.sig', 'w') as sfd:
-                    sfd.write(signature.data)
+                sign_file(
+                    gpg=gpg,
+                    fname=os.path.join(dname, fname),
+                    keyid=keyid,
+                    passphrase=passphrase,
+                )
     else:
         fname = src_dir
-        with open(fname) as fd:
-            signature = gpg.sign_file(
-                fd,
-                keyid=keyid,
-                passphrase=passphrase,
-                detach=True,
-            )
-            if not signature.data:
-                raise Exception("Failed to sign file %s: \n%s",
-                                file,
-                                signature.stderr)
-            with open(fname + '.sig', 'w') as sfd:
-                sfd.write(signature.data)
+        sign_file(
+            gpg=gpg,
+            fname=fname,
+            keyid=keyid,
+            passphrase=passphrase,
+        )
 
 
 def save_file(src_path, dst_path):

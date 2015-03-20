@@ -1,3 +1,9 @@
 python-testrepository
 python-tox
 git
+bats
+rpm-python
+createrepo
+rpm-sign
+gnupg
+redhat-lsb-core
