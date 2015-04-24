@@ -3,7 +3,10 @@ python-tox
 git
 bats
 rpm-python
+koji
 createrepo
 rpm-sign
 gnupg
 redhat-lsb-core
+libffi-devel
+openssl-devel

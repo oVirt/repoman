@@ -2,11 +2,13 @@
 
 @test "basic: Command help is shown without errors" {
     run repoman -h
+    echo "$output"
     [[ $status -eq 0 ]]
-    [[ ${lines[0]} =~ ^usage:\ repoman ]]
+    [[ ${output} =~ ^.*usage:\ repoman ]]
 }
 
 @test "basic: Wrong parameters returns error" {
     run repoman --dontexist
+    echo "$output"
     [[ $status -eq 2 ]]
 }

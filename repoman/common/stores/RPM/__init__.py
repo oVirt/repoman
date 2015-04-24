@@ -87,7 +87,7 @@ class RPMStore(ArtifactStore):
 
     CONFIG_SECTION = 'RPMStore'
     DEFAULT_CONFIG = {
-        'distro_reg': r'\.(fc|el)\d+',
+        'distro_reg': r'\.(fc|el)\d+(?:\w*)',
         'temp_dir': 'generate',
         'path_prefix': 'rpm,src',
         'signing_key': '',

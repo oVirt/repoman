@@ -1,3 +1,5 @@
 python-pbr
 python-setuptools
 git
+libffi-devel
+openssl-devel

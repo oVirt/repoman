@@ -22,17 +22,17 @@ from ..utils import split
 logger = logging.getLogger(__name__)
 
 
-class KojiSource(ArtifactSource):
+class KojiURLSource(ArtifactSource):
 
     DEFAULT_CONFIG = {
         'koji_host_re': r'koji\.fedoraproject\.org',
     }
-    CONFIG_SECTION = 'KojiSource'
+    CONFIG_SECTION = 'KojiURLSource'
 
     @classmethod
     def formats_list(cls):
         return (
-            "https?://{KojiSource[koji_host_re]}/*",
+            "https?://{KojiURLSource[koji_host_re]}/*",
         )
 
     @classmethod
