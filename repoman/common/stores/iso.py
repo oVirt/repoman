@@ -6,7 +6,10 @@ This module holds the class and methods to manage an iso store.
 repository_dir
 └── iso
     ├── $project1
-    │   │   ├── $iso1
+    │   │   ├── $version
+    │   │   |   ├── $iso1
+    │   |   │   ├── $iso1.md5sum
+    │   │   |   └── $iso1.md5sum.sig
     │   │   └── ...
     │   └── ...
     └── ...
@@ -32,6 +35,9 @@ from ..artifact import (
 logger = logging.getLogger(__name__)
 
 
+ISO_REGEX = r'(.*/)?(?P<name>[^\d]+).(?P<version>\d.*)\.iso'
+
+
 class Iso(Artifact):
     def __init__(self, path, temp_dir):
         self.temp_dir = temp_dir
@@ -55,7 +61,7 @@ class Iso(Artifact):
     def version(self):
         if not self._version:
             self._version = re.match(
-                r'(.*/)?ovirt-(guest-tools|live)-(?P<version>.*).iso',
+                ISO_REGEX,
                 self.path
             ).groupdict().get('version')
         return self._version
@@ -67,10 +73,12 @@ class Iso(Artifact):
     @property
     def name(self):
         if not self._name:
-            self._name = re.match(
-                r'(.*/)?(?P<name>ovirt-guest-tools|ovirt-live).*',
+            match = re.match(
+                ISO_REGEX,
                 self.path
-            ).groupdict().get('name')
+            )
+            if match is not None:
+                self._name = match.groupdict().get('name')
         return self._name
 
     @property
@@ -146,7 +154,7 @@ class IsoStore(ArtifactStore):
 
     @classmethod
     def handles_artifact(cls, artifact_str):
-        return re.match(r'(.+/)?ovirt-(live|guest-tools).*\.iso', artifact_str)
+        return re.match(ISO_REGEX, artifact_str)
 
     def add_artifact(self, iso, **args):
         self.add_iso(iso, **args)

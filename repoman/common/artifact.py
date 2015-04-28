@@ -258,9 +258,10 @@ class ArtifactList(dict, object):
         self.name_class = name_class
 
     def add_pkg(self, artifact, onlyifnewer=False):
-        if artifact.name not in self:
-            self[artifact.name] = self.name_class(artifact.name)
-        return self[artifact.name].add_artifact(artifact, onlyifnewer)
+        if artifact.name is not None:
+            if artifact.name not in self:
+                self[artifact.name] = self.name_class(artifact.name)
+            return self[artifact.name].add_artifact(artifact, onlyifnewer)
 
     def del_artifact(self, name):
         if name in self:
