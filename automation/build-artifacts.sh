@@ -17,16 +17,24 @@ sed -i \
   -e 's/Release: \(.*\)/Release: \1%{?dist}/' \
   dist/repoman.spec
 
-for requirement in $(cat requirements.txt); do
+for requirement in $(grep -v -e '^\s*#' requirements.txt); do
     requirement="${requirement%%<*}"
     requirement="${requirement%%>*}"
     requirement="${requirement%%=*}"
-    sed -i \
-        -e "s/Url: \(.*\)/Url: \1\nRequires:python-$requirement/" \
-        dist/repoman.spec
+    if [[ "$requirement" == "pyOpenSSL" ]]; then
+        sed \
+            -i \
+            -e "s/Url: \(.*\)/Url: \1\nRequires:$requirement/" \
+            dist/repoman.spec
+    else
+        sed \
+            -i \
+            -e "s/Url: \(.*\)/Url: \1\nRequires:python-$requirement/" \
+            dist/repoman.spec
+    fi
 done
 
-for requirement in $(cat build-requirements.txt); do
+for requirement in $(grep -v -e '^\s*#' build-requirements.txt); do
     requirement="${requirement%%<*}"
     requirement="${requirement%%>*}"
     requirement="${requirement%%=*}"
