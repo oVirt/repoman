@@ -26,8 +26,13 @@ class JenkinsSource(ArtifactSource):
     @classmethod
     def expand(cls, source_str, config):
         art_list = []
-        if not re.match('https?://%s/' % config.get('jenkins_host_re'),
-                        source_str):
+        if (
+            has_store(source_str)
+            or re.match(
+                'https?://%s/' % config.get('jenkins_host_re'),
+                source_str,
+            )
+        ):
             return source_str, art_list
         filters_str = split(source_str, ':', 2)[-1]
         source_str = ':'.join(source_str.split(':', 2)[:2])
