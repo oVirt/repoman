@@ -28,7 +28,7 @@ class JenkinsSource(ArtifactSource):
         art_list = []
         if (
             has_store(source_str)
-            or re.match(
+            or not re.match(
                 'https?://%s/' % config.get('jenkins_host_re'),
                 source_str,
             )
