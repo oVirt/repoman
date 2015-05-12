@@ -1,5 +1,6 @@
-python-pbr
-python-setuptools
 git
 libffi-devel
 openssl-devel
+python-pbr
+python-setuptools
+yum

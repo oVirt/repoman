@@ -1,4 +1,18 @@
-#!/bin/bash -xe
+#!/bin/bash -e
+
+
+PEXPECT_SPEC='
+%if 0%{?fedora} >= 1
+Requires: python-pexpect
+%else
+Requires: pexpect
+%endif
+'
+
+
+echo "######################################################################"
+echo "#  Building artifacts"
+echo "#"
 
 shopt -s nullglob
 
@@ -26,6 +40,13 @@ for requirement in $(grep -v -e '^\s*#' requirements.txt); do
             -i \
             -e "s/Url: \(.*\)/Url: \1\nRequires:$requirement/" \
             dist/repoman.spec
+    elif [[ "$requirement" == "pexpect" ]]; then
+        awk \
+            -vextra="$PEXPECT_SPEC" \
+            '/Url:/{print extra}1' \
+            dist/repoman.spec \
+        > dist/repoman.spec.tmp
+        mv dist/repoman.spec.tmp dist/repoman.spec
     else
         sed \
             -i \
@@ -58,3 +79,21 @@ for file in $(find dist -iregex ".*\.\(tar\.gz\|rpm\)$"); do
     echo "Archiving $file"
     mv "$file" exported-artifacts/
 done
+
+echo "#"
+echo "#  Building artifacts OK"
+echo "######################################################################"
+
+echo "######################################################################"
+echo "#  Installation tests"
+echo "#"
+
+if which yum-deprecated &>/dev/null; then
+    yum-deprecated install exported-artifacts/*rpm
+else
+    yum install exported-artifacts/*rpm
+fi
+
+echo "#"
+echo "# Installation OK"
+echo "######################################################################"
