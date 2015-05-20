@@ -23,13 +23,12 @@ class JenkinsSource(ArtifactSource):
             "https?://{JenkinsSource[jenkins_host_re]/*}",
         )
 
-    @classmethod
-    def expand(cls, source_str, config):
+    def expand(self, source_str):
         art_list = []
         if (
-            has_store(source_str)
+            has_store(source_str, self.stores)
             or not re.match(
-                'https?://%s/' % config.get('jenkins_host_re'),
+                'https?://%s/' % self.config.get('jenkins_host_re'),
                 source_str,
             )
         ):

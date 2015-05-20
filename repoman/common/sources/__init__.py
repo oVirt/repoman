@@ -25,6 +25,11 @@ class ArtifactSource(object):
             if name != 'ArtifactSource':
                 SOURCES[name] = cls
 
+    def __init__(self, config, stores):
+        self.config = config
+        self.stores = stores
+        super(ArtifactSource, self).__init__()
+
     @abstractproperty
     def DEFAULT_CONFIG(self):
         """
@@ -40,7 +45,7 @@ class ArtifactSource(object):
         pass
 
     @abstractmethod
-    def expand(self, source_str, config):
+    def expand(self, source_str):
         """
         Gets a source string and expands it to it's elements.
         """

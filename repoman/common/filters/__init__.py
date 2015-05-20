@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 import logging
+from abc import (
+    ABCMeta,
+    abstractmethod,
+    abstractproperty,
+)
 
 
 from ..utils import get_plugins
@@ -13,13 +18,39 @@ FILTERS = {}
 
 
 class ArtifactFilter(object):
-    class __metaclass__(type):
+    class __metaclass__(ABCMeta):
         def __init__(cls, name, bases, attrs):
             type.__init__(cls, name, bases, attrs)
             # Don't register this base class
             if name != 'ArtifactFilter':
                 FILTERS[name] = cls
 
+    def __init__(self, config, stores):
+        self.stores = stores
+        self.config = config
+        super(ArtifactFilter, self).__init__()
 
-# load all the plugins
+    @abstractproperty
+    def DEFAULT_CONFIG(self):
+        """
+        Default configuration values for that store
+        """
+        pass
+
+    @abstractproperty
+    def CONFIG_SECTION(self):
+        """
+        Configuration section name for this store
+        """
+        pass
+
+    @abstractmethod
+    def filter(self, filter_str, art_list):
+        """
+        Filters the given art_list according to filter_str and config
+        """
+        pass
+
+
+# Force the load of all the plugins
 from . import *  # noqa

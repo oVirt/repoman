@@ -27,6 +27,10 @@ class ArtifactStore(object):
             if name != 'ArtifactStore':
                 STORES[name] = cls
 
+    def __init__(self, config):
+        self.config = config
+        super(ArtifactStore, self).__init__()
+
     @classmethod
     def get_conf_section(cls):
         return 'store.' + cls.CONFIG_SECTION
@@ -89,15 +93,16 @@ class ArtifactStore(object):
         """
 
 
-def has_store(artifact):
+def has_store(artifact, stores):
     """
     Check if any of the registered stores can handle the given artifact
 
     :param artifact: full path or url to the artifact
+    :param stores: stores to look into
     """
     return any(
         store.handles_artifact(artifact)
-        for store in STORES.itervalues()
+        for store in stores
     )
 
 # Force the load of all the plugins

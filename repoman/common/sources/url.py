@@ -35,8 +35,7 @@ class URLSource(ArtifactSource):
             "rec:URL"
         )
 
-    @classmethod
-    def expand(cls, source_str, config):
+    def expand(self, source_str):
         urls = set()
         # for some reason it requires two chars in the last group
         source_match = re.match(
@@ -47,15 +46,14 @@ class URLSource(ArtifactSource):
             return set(), urls
         source = source_match.groupdict()
         if source['recursive']:
-            urls = urls.union(cls.expand_recursive(source['url']))
-        elif has_store(source['url']):
+            urls = urls.union(self.expand_recursive(source['url']))
+        elif has_store(source['url'], self.stores):
             urls.add(source['url'])
         else:
-            urls = urls.union(cls.expand_page(source['url']))
+            urls = urls.union(self.expand_page(source['url']))
         return source['filters'], urls
 
-    @classmethod
-    def expand_page(cls, page_url):
+    def expand_page(self, page_url):
         logger.info('Parsing URL: %s', page_url)
         data = requests.get(page_url).text
         link_reg = re.compile(r'(?<=href=")[^"]+')
@@ -63,9 +61,9 @@ class URLSource(ArtifactSource):
         for line in data.splitlines():
             links = link_reg.findall(line)
             art_list = art_list.union(set([
-                cls.get_link(page_url, link)
+                self.get_link(page_url, link)
                 for link in links
-                if has_store(link)
+                if has_store(link, self.stores)
             ]))
         for art_url in art_list:
             logger.info('    Got artifact URL: %s', art_url)
@@ -92,8 +90,7 @@ class URLSource(ArtifactSource):
             else:
                 return link_url
 
-    @classmethod
-    def expand_recursive(cls, page_url, level=0):
+    def expand_recursive(self, page_url, level=0):
         if level > 0:
             logger.debug('Recursively fetching URL (level %d): %s',
                          level, page_url)
@@ -105,13 +102,13 @@ class URLSource(ArtifactSource):
         url_reg = re.compile(
             r'(?<=href=")(/|%s|(?![^:]+?://))[^"]+/(?=")' % page_url)
         next_urls = (
-            cls.get_link(page_url, match.group(), internal=True)
+            self.get_link(page_url, match.group(), internal=True)
             for match in url_reg.finditer(data)
             if match.group() != page_url
         )
         for next_url in next_urls:
             if not next_url:
                 continue
-            pkg_list.extend(cls.expand_recursive(next_url, level + 1))
-        pkg_list.extend(cls.expand_page(page_url))
+            pkg_list.extend(self.expand_recursive(next_url, level + 1))
+        pkg_list.extend(self.expand_page(page_url))
         return pkg_list

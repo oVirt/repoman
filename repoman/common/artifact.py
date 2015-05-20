@@ -57,7 +57,7 @@ class Artifact(object):
 
     def __init__(self, path, temp_dir='/tmp'):
         """
-        :param path: Path or url to the rpm
+        :param path: Path or url to the artifact
         :param temp_dir: If url specified, will use that temporary dir to store
             it, the caller should take care of creating and deleting that
             temporary dir if needed
@@ -74,10 +74,10 @@ class Artifact(object):
         self.path = path
         # will be calculated if needed
         self._md5 = None
-        # this property should uniquely identify a rpm entity, in the sense
-        # that if you have two rpms with the same full_name they must package
-        # the same content or one of them is wrongly generated (the version was
-        # not bumped or something)
+        # this property should uniquely identify an artifact entity, in the
+        # sense that if you have two rpms with the same full_name they must
+        # package the same content or one of them is wrongly generated (the
+        # version was not bumped or something)
         self.full_name = '%s(%s %s)' % (
             self.type, self.name, self.version,
         )

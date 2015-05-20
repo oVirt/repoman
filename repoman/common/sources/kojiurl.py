@@ -35,10 +35,9 @@ class KojiURLSource(ArtifactSource):
             "https?://{KojiURLSource[koji_host_re]}/*",
         )
 
-    @classmethod
-    def expand(cls, source_str, config):
+    def expand(self, source_str):
         art_list = []
-        if not re.match('https?://%s/' % config.get('koji_host_re'),
+        if not re.match('https?://%s/' % self.config.get('koji_host_re'),
                         source_str):
             return '', art_list
         # remove filters
@@ -55,7 +54,12 @@ class KojiURLSource(ArtifactSource):
         ]
         for url in lvl2_urls:
             logger.info('    Got 2nd level URL: %s', url)
-            art_list.extend(URLSource.expand_page(url))
+            art_list.extend(
+                URLSource(
+                    config=self.config,
+                    stores=self.stores
+                ).expand_page(url)
+            )
         if not art_list:
             logger.warn('    No packages found')
             logger.info('    Done')

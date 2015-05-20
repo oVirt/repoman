@@ -108,9 +108,9 @@ def koji_data(request):
 def test_sources(monkeypatch, koji_data):
     source_str, koji_mock = koji_data
     monkeypatch.setattr(kojibuild, 'koji', koji_mock)
-    monkeypatch.setattr(kojibuild, 'has_store', lambda x: True)
-    koji_source = kojibuild.KojiBuildSource()
-    _, artifacts = koji_source.expand(source_str, ConfigMock())
+    monkeypatch.setattr(kojibuild, 'has_store', lambda x, y: True)
+    koji_source = kojibuild.KojiBuildSource(config=ConfigMock(), stores=None)
+    _, artifacts = koji_source.expand(source_str)
     assert artifacts == koji_mock.get_mock_expected()
 
 
@@ -118,8 +118,8 @@ def test_filters_are_etracted(monkeypatch):
     source_str = 'koji:name-version-release:whatever:filters'
     koji_mock = KojiMock(builds=(Build([Package('pkg6', 'rpm6')]),))
     monkeypatch.setattr(kojibuild, 'koji', koji_mock)
-    monkeypatch.setattr(kojibuild, 'has_store', lambda x: True)
-    koji_source = kojibuild.KojiBuildSource()
-    extracte_filters, artifacts = koji_source.expand(source_str, ConfigMock())
+    monkeypatch.setattr(kojibuild, 'has_store', lambda x, y: True)
+    koji_source = kojibuild.KojiBuildSource(config=ConfigMock(), stores=None)
+    extracte_filters, artifacts = koji_source.expand(source_str)
     assert artifacts == koji_mock.get_mock_expected()
     assert extracte_filters == 'whatever:filters'

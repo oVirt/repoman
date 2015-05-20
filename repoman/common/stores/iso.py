@@ -21,7 +21,6 @@ from getpass import getpass
 from . import ArtifactStore
 from ..utils import (
     save_file,
-    download,
     list_files,
     sign_detached,
 )
@@ -38,48 +37,38 @@ logger = logging.getLogger(__name__)
 ISO_REGEX = r'(.*/)?(?P<name>[^\d]+).(?P<version>\d.*)\.iso'
 
 
+class WrongIsoError(Exception):
+    """
+    Any iso failure
+    """
+    pass
+
+
 class Iso(Artifact):
     def __init__(self, path, temp_dir):
-        self.temp_dir = temp_dir
-        if path.startswith('http:') or path.startswith('https:'):
-            fname = path.rsplit('/', 1)[-1]
-            if not fname:
-                raise Exception('Passed trailing slash in path %s, '
-                                'unable to guess iso name'
-                                % path)
-            fpath = temp_dir + '/' + fname
-            download(path, fpath)
-            path = fpath
+        nv_match = re.match(ISO_REGEX, path)
+        if not nv_match:
+            raise WrongIsoError(
+                "Can't extract name and version from %s"
+                % self.path,
+            )
+        self._name = nv_match.groupdict().get('name')
+        self._version = nv_match.groupdict().get('version')
+        super(Iso, self).__init__(path=path, temp_dir=temp_dir)
         with open(path) as fdno:
             self.inode = os.fstat(fdno.fileno()).st_ino
-        self.path = path
-        self._md5 = None
-        self._name = None
-        self._version = None
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def version(self):
-        if not self._version:
-            self._version = re.match(
-                ISO_REGEX,
-                self.path
-            ).groupdict().get('version')
         return self._version
 
     @property
     def extension(self):
         return '.iso'
-
-    @property
-    def name(self):
-        if not self._name:
-            match = re.match(
-                ISO_REGEX,
-                self.path
-            )
-            if match is not None:
-                self._name = match.groupdict().get('name')
-        return self._name
 
     @property
     def type(self):
@@ -129,9 +118,8 @@ class IsoStore(ArtifactStore):
             automatically add all the isos under it to the repo if any.
         """
         self.name = self.__class__.__name__
-        self.config = config
         self.isos = ArtifactList('isos')
-        self._path_prefix = self.config.get('path_prefix').split(',')
+        self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path
         self.to_copy = []
         self.sign_key = config.get('signing_key')
@@ -147,13 +135,13 @@ class IsoStore(ArtifactStore):
                     hidelog=True,
                 )
             logger.info('Repo %s loaded', repo_path)
+        super(IsoStore, self).__init__(config=config)
 
     @property
     def path_prefix(self):
         return self._path_prefix
 
-    @classmethod
-    def handles_artifact(cls, artifact_str):
+    def handles_artifact(self, artifact_str):
         return re.match(ISO_REGEX, artifact_str)
 
     def add_artifact(self, iso, **args):

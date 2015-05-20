@@ -70,7 +70,10 @@ class Repo(object):
             if key in self.stores or 'all' in self.stores
         ])
         self.config.set('stores', ', '.join(self.stores.keys()))
-        self.parser = Parser(config=self.config)
+        self.parser = Parser(
+            config=self.config,
+            stores=self.stores,
+        )
         temp_dir = self.config.get('temp_dir')
         if temp_dir == 'generate':
             temp_dir = tempfile.mkdtemp()

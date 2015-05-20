@@ -47,10 +47,9 @@ class DirSource(ArtifactSource):
             "dir:repo_path"
         )
 
-    @classmethod
-    def expand(cls, source_str, config):
+    def expand(self, source_str):
         orig_source_str = source_str
-        allowed_paths = config.getarray('allowed_dir_paths')
+        allowed_paths = self.config.getarray('allowed_dir_paths')
         if source_str.startswith('dir:'):
             source_str = source_str.split(':', 1)[-1]
         # get rid of any trailing filters
@@ -72,6 +71,6 @@ class DirSource(ArtifactSource):
             print allowed_paths
             raise Exception('Source %s outside the base path' % source_str)
         if not os.path.isdir(source_str) \
-           and has_store(source_str):
+           and has_store(source_str, self.stores):
             return filters_str, [source_str]
         return filters_str, find_recursive(source_str, has_store)

@@ -83,6 +83,12 @@ class RPMStore(ArtifactStore):
 
       signing_passphrase
         Passphrase for the above key
+
+      with_sources
+        If true, will extract the sources form the scrrpms
+
+      with_srcrpms
+        If false, will ignore the srcrpms
     """
 
     CONFIG_SECTION = 'RPMStore'
@@ -93,19 +99,18 @@ class RPMStore(ArtifactStore):
         'signing_key': '',
         'signing_passphrase': 'ask',
         'with_sources': 'false',
+        'with_srcrpms': 'true',
     }
 
     def __init__(self, config, repo_path=None):
         """
-        :param path: Path to the repository directory, if passed it will
+        :param repo_path: Path to the repository directory, if passed it will
             automatically add all the rpms under it to the repo if any.
-        :param distro_reg: Regexp to match the distribution from the release
-            string
+        :param config: configuration for the store
         """
         self.name = self.__class__.__name__
-        self.config = config
         self.rpms = RPMList()
-        self._path_prefix = self.config.get('path_prefix').split(',')
+        self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path
         self.to_copy = []
         self.distros = set()
@@ -120,14 +125,20 @@ class RPMStore(ArtifactStore):
                     hidelog=True,
                 )
             logger.info('Repo %s loaded', repo_path)
+        super(RPMStore, self).__init__(config=config)
 
     @property
     def path_prefix(self):
         return self._path_prefix
 
-    @classmethod
-    def handles_artifact(cls, artifact):
-        return artifact.endswith('.rpm')
+    def handles_artifact(self, artifact):
+        if self.config.get('with_srcrpms').lower() == 'false':
+            return (
+                artifact.endswith('.rpm')
+                and not artifact.endswith('.src.rpm')
+            )
+        else:
+            return artifact.endswith('.rpm')
 
     def add_artifact(self, pkg, **args):
         self.add_rpm(pkg, **args)

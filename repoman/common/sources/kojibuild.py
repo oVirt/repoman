@@ -33,8 +33,7 @@ class KojiBuildSource(ArtifactSource):
             "koji:name-version-release"
         )
 
-    @classmethod
-    def expand(cls, source_str, config):
+    def expand(self, source_str):
         art_list = []
         if not source_str.startswith('koji:'):
             return '', art_list
@@ -43,10 +42,10 @@ class KojiBuildSource(ArtifactSource):
         source, filters_str = split(source_str, ':', 1)
         logger.info('Parsing Koji build: %s', source)
         client = koji.ClientSession(
-            config.get('koji_server'),
+            self.config.get('koji_server'),
             {},
         )
-        topurl = config.get('koji_topurl')
+        topurl = self.config.get('koji_topurl')
         if source.startswith('@'):
             tag = source[1:]
             builds = client.getLatestBuilds(tag=tag)
@@ -76,7 +75,7 @@ class KojiBuildSource(ArtifactSource):
                 )
             for rpm in rpms:
                 url = pathinfo.build(build) + '/' + pathinfo.rpm(rpm)
-                if has_store(url):
+                if has_store(url, self.stores):
                     art_list.append(url)
         if not art_list:
             logger.warn('    No packages found')

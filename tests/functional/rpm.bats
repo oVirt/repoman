@@ -82,6 +82,25 @@ PGP_ID=bedc9c4be614e4ba
     [[ -f "$repo/$SIGNED_SRPM_EXPECTED_PATH" ]]
 }
 
+@test "rpm: Don't add srcrpm if conf says not to" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat >> "$conf" <<EOC
+[store.RPMStore]
+with_srcrpms=False
+EOC
+    repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+                "$BATS_TEST_DIRNAME/$SIGNED_SRPM" \
+                "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    ! [[ -f "$repo/$SIGNED_SRPM_EXPECTED_PATH" ]]
+    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
+}
+
 @test "rpm: Generate metadata only once" {
     local repo
     repo="$BATS_TMPDIR/myrepo"

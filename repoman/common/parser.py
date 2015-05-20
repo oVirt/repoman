@@ -20,19 +20,40 @@ logger = logging.getLogger(__name__)
 
 
 class Parser(object):
-    def __init__(self, config):
+    def __init__(self, config, stores):
+        """
+        :param config: configuration for the parser
+        :param stores: instances of the available stores
+        """
         self.config = config
+        self.stores = stores
         self.filters = config.getarray('filters')
         self.filters = dict([
-            (key, val())
-            for key, val in filters.FILTERS.iteritems()
-            if key in self.filters or 'all' in self.filters
+            (
+                cname,
+                cls(
+                    stores=stores.values(),
+                    config=config.get_section(
+                        section='filter.' + cls.CONFIG_SECTION,
+                    )
+                )
+            )
+            for cname, cls in filters.FILTERS.iteritems()
+            if cname in self.filters or 'all' in self.filters
         ])
         self.sources = config.getarray('sources')
         self.sources = dict([
-            (key, val())
-            for key, val in sources.SOURCES.iteritems()
-            if key in self.sources or 'all' in self.sources
+            (
+                cname,
+                cls(
+                    stores=stores.values(),
+                    config=config.get_section(
+                        section='source.' + cls.CONFIG_SECTION,
+                    )
+                )
+            )
+            for cname, cls in sources.SOURCES.iteritems()
+            if cname in self.sources or 'all' in self.sources
         ])
 
     def parse(self, full_source_str):
@@ -42,11 +63,7 @@ class Parser(object):
             source = stuple[1]
             source_str = full_source_str
             logger.debug('Checking source %s with %s', aname, source_str)
-            result = source.expand(
-                source_str,
-                self.config.get_section(
-                    section='source.' + source.CONFIG_SECTION)
-            )
+            result = source.expand(source_str)
             filters_str = result[0]
             art_list = result[1]
             # If we have nothing to filter, keep try next source parser
@@ -67,8 +84,6 @@ class Parser(object):
                     result = fclass.filter(
                         filters_str,
                         art_list,
-                        self.config.get_section(
-                            section='filter.' + fclass.CONFIG_SECTION)
                     )
                     filters_str, art_list = result
                 if not filters_str:
