@@ -171,6 +171,7 @@ def download(path, dest_path):
     prev_percent = 0
     progress = 0
     if length:
+        cur_percent = 0
         sys.stdout.write(
             '    %[' +
             '-' * 23 + '25' + '-' * 24 +
