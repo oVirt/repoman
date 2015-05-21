@@ -133,7 +133,11 @@ class Config(object):
 
     def getarray(self, entry, default=None):
         val = self.get(entry, default)
-        val = [elem.strip() for elem in val.split(',') if elem]
+        val = [
+            elem.strip()
+            for elem in val.replace(',', '\n').splitlines()
+            if elem.strip()
+        ]
         return val
 
     def get_section(self, section):

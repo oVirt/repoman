@@ -62,6 +62,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     run repoman "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    echo "$output"
     [[ "$output" =~ Unknown\ distro ]]
     [[ "$status" -eq 1 ]]
 }
@@ -107,6 +108,7 @@ EOC
     rm -rf "$BATS_TMPDIR/myrepo"
     run repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     echo "$output"
+    [[ "$output" =~ ^.*(Creating\ metadata.*)$ ]]
     ! [[ "$output" =~ ^.*(Creating\ metadata.*){2}$ ]]
 }
 
@@ -182,4 +184,55 @@ EOC
         echo "Checking that $gen_file.sig waas not generated"
         ! [[ -f "$repo/src/$FULL_SRPM_NAME/$gen_file.sig" ]]
     done
+}
+
+
+@test "rpm: Create symlinks" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat >> "$conf" <<EOC
+[store.RPMStore]
+extra_symlinks=
+    one:two,
+    three:four
+EOC
+    repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+                "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
+    [[ -L "$repo/two" ]]
+    [[ -L "$repo/four" ]]
+    two_dst="$(readlink "$repo/two")"
+    [[ "$repo/one" == "$two_dst" ]]
+    four_dst="$(readlink "$repo/four")"
+    [[ "$repo/three" == "$four_dst" ]]
+}
+
+@test "rpm: Warn if symlink path exists or origin does not" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat >> "$conf" <<EOC
+[store.RPMStore]
+extra_symlinks=idontexist:imalink,rpm:imalink
+EOC
+    run repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    echo "$output"
+    [[ "$status" == '0' ]]
+    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
+    [[ -L "$repo/imalink" ]]
+    link_dst="$(readlink "$repo/imalink")"
+    [[ "$repo/idontexist" == "$link_dst" ]]
+    [[ "$output" =~ ^.*WARNING:.*The\ link\ points\ to\ non-existing\ path.*$ ]]
+    [[ "$output" =~ ^.*WARNING:.*Path\ for\ the\ link\ already\ exists.*$ ]]
 }

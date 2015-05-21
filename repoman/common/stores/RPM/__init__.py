@@ -89,6 +89,10 @@ class RPMStore(ArtifactStore):
 
       with_srcrpms
         If false, will ignore the srcrpms
+
+      extra_symlinks
+        Comma separated list of orig:symlink pairs to create links, the paths
+        will be relative to the store root path.
     """
 
     CONFIG_SECTION = 'RPMStore'
@@ -100,6 +104,7 @@ class RPMStore(ArtifactStore):
         'signing_passphrase': 'ask',
         'with_sources': 'false',
         'with_srcrpms': 'true',
+        'extra_symlinks': '',
     }
 
     def __init__(self, config, repo_path=None):
@@ -220,6 +225,9 @@ class RPMStore(ArtifactStore):
         logger.info('Updating metadata')
         self.createrepos()
         logger.info('')
+        logger.info('Creating symlinks')
+        self.create_symlinks()
+        logger.info('')
         logger.info('Saved %s\n', self.path)
 
     def is_latest_version(self, pkg):
@@ -269,7 +277,7 @@ class RPMStore(ArtifactStore):
         """
         procs = []
         for distro in self.distros:
-            logger.info('Creating metadata for %s', distro)
+            logger.info('  Creating metadata for %s', distro)
             dst_dir = self.path + '/rpm/' + distro
             new_proc = mp.Process(
                 target=self.createrepo,
@@ -351,3 +359,35 @@ class RPMStore(ArtifactStore):
                 fmatch=lambda pkg: not pkg.signature):
             pkg.sign(keyuid, passphrase)
         logger.info("Done signing")
+
+    def create_symlinks(self):
+        """Creates all the symlinks to the dirs passed on the config"""
+        symlinks = self.config.getarray('extra_symlinks')
+        for symlink in symlinks:
+            if ':' not in symlink:
+                logger.warn('  Ignoring malformed symlink def %s', symlink)
+                continue
+            s_orig, s_link = symlink.split(':', 1)
+            if not s_orig or not s_link:
+                logger.warn('  Ignoring malformed symlink def %s', symlink)
+                continue
+            s_orig = os.path.join(self.path, s_orig)
+            s_link = os.path.join(self.path, s_link)
+            logger.info('  %s -> %s', s_link, s_orig)
+            if os.path.lexists(s_link):
+                logger.warn('    Path for the link already exists')
+                continue
+            if not os.path.exists(s_orig):
+                logger.warn('   The link points to non-existing path')
+            try:
+                os.symlink(s_orig, s_link)
+            except Exception as exc:
+                logger.error(
+                    '    Failed to create link %s -> %s',
+                    s_link,
+                    s_orig,
+                )
+                logger.error(exc)
+                continue
+            logger.info('  Done')
+        logger.info('Symlinks created')
