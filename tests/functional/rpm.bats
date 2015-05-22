@@ -185,7 +185,7 @@ EOC
 }
 
 
-@test "rpm: Create symlinks" {
+@test "rpm: Create relative symlinks" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
@@ -205,9 +205,9 @@ EOC
     helpers.is_link "$repo/two"
     helpers.is_link "$repo/four"
     two_dst="$(readlink "$repo/two")"
-    [[ "$repo/one" == "$two_dst" ]]
+    helpers.equals "one" "$two_dst"
     four_dst="$(readlink "$repo/four")"
-    [[ "$repo/three" == "$four_dst" ]]
+    helpers.equals "three" "$four_dst"
 }
 
 
@@ -226,11 +226,11 @@ EOC
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ "$status" == '0' ]]
+    helpers.equals "$status" '0'
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
     helpers.is_link "$repo/imalink"
     link_dst="$(readlink "$repo/imalink")"
-    [[ "$repo/idontexist" == "$link_dst" ]]
+    helpers.equals "$repo/idontexist" "$repo/$link_dst"
     [[ "$output" =~ ^.*WARNING:.*The\ link\ points\ to\ non-existing\ path.*$ ]]
     [[ "$output" =~ ^.*WARNING:.*Path\ for\ the\ link\ already\ exists.*$ ]]
 }
@@ -251,7 +251,7 @@ EOC
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ "$status" == '0' ]]
+    helpers.equals "$status" '0'
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
 }
 
@@ -271,7 +271,7 @@ EOC
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ "$status" == '0' ]]
+    helpers.equals "$status" '0'
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
 }
 
@@ -291,6 +291,6 @@ EOC
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ "$status" == '0' ]]
+    helpers.equals "$status" '0'
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH#rpm/}"
 }

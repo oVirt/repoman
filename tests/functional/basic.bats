@@ -7,13 +7,13 @@ load helpers
 
 @test "basic: Command help is shown without errors" {
     helpers.run repoman -h
-    [[ $status -eq 0 ]]
+    helpers.equals "$status" "0"
     [[ ${output} =~ ^.*usage:\ repoman ]]
 }
 
 @test "basic: Wrong parameters returns error" {
     helpers.run repoman --dontexist
-    [[ $status -eq 2 ]]
+    helpers.equals "$status" "2"
 }
 
 

@@ -28,3 +28,10 @@ helpers.run() {
     run "$@"
     echo "$output"
 }
+
+helpers.equals() {
+    local what="${1:?}"
+    local to_what="${1:?}"
+    echo "$what == $to_what"
+    [[ "$what" == "$to_what" ]]
+}

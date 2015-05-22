@@ -392,13 +392,13 @@ class RPMStore(ArtifactStore):
             if not s_orig or not s_link:
                 logger.warn('  Ignoring malformed symlink def %s', symlink)
                 continue
-            s_orig = os.path.join(self.path, s_orig)
+            full_s_orig = os.path.join(self.path, s_orig)
             s_link = os.path.join(self.path, s_link)
             logger.info('  %s -> %s', s_link, s_orig)
             if os.path.lexists(s_link):
                 logger.warn('    Path for the link already exists')
                 continue
-            if not os.path.exists(s_orig):
+            if not os.path.exists(full_s_orig):
                 logger.warn('   The link points to non-existing path')
             try:
                 os.symlink(s_orig, s_link)
