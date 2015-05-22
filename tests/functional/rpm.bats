@@ -88,7 +88,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$BATS_TMPDIR/myrepo"
-    cat >> "$conf" <<EOC
+    cat > "$conf" <<EOC
 [store.RPMStore]
 with_srcrpms=False
 EOC
@@ -192,7 +192,7 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$BATS_TMPDIR/myrepo"
-    cat >> "$conf" <<EOC
+    cat > "$conf" <<EOC
 [store.RPMStore]
 extra_symlinks=
     one:two,
@@ -218,7 +218,7 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$BATS_TMPDIR/myrepo"
-    cat >> "$conf" <<EOC
+    cat > "$conf" <<EOC
 [store.RPMStore]
 extra_symlinks=idontexist:imalink,rpm:imalink
 EOC
@@ -235,4 +235,25 @@ EOC
     [[ "$repo/idontexist" == "$link_dst" ]]
     [[ "$output" =~ ^.*WARNING:.*The\ link\ points\ to\ non-existing\ path.*$ ]]
     [[ "$output" =~ ^.*WARNING:.*Path\ for\ the\ link\ already\ exists.*$ ]]
+}
+
+
+@test "rpm: use custom rpm dir name" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat > "$conf" <<EOC
+[store.RPMStore]
+rpm_dir=custom_name
+EOC
+    run repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    echo "$output"
+    [[ "$status" == '0' ]]
+    [[ -f "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}" ]]
 }

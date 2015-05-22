@@ -57,6 +57,12 @@ from ...utils import (
 logger = logging.getLogger(__name__)
 
 
+class CreaterepoError(Exception): pass  # flake8: noqa
+
+
+class CreatereposError(Exception): pass  # flake8: noqa
+
+
 class RPMStore(ArtifactStore):
     """
     Represents the repository sctructure, it does not require that the repo has
@@ -69,13 +75,15 @@ class RPMStore(ArtifactStore):
       distro_reg
         Regular expression to extract the distribution from the release string
 
-      temp_dir
-        Temporary dir to store any transient downloads (like rpms from
-        urls). The caller should make sure it exists and clean it up if needed.
+      extra_symlinks
+        Comma separated list of orig:symlink pairs to create links, the paths
 
       path_prefix
         Prefixes of this store inside the globl artifact repository, separated
         by commas
+
+      rpm_dir
+        name of the directory that will contain the rpms (rpm by default)
 
       signing_key
         Path to the gpg keey to sign the rpms with, will not sign them if not
@@ -84,27 +92,29 @@ class RPMStore(ArtifactStore):
       signing_passphrase
         Passphrase for the above key
 
+      temp_dir
+        Temporary dir to store any transient downloads (like rpms from
+        urls). The caller should make sure it exists and clean it up if needed.
+
       with_sources
         If true, will extract the sources form the scrrpms
 
       with_srcrpms
         If false, will ignore the srcrpms
-
-      extra_symlinks
-        Comma separated list of orig:symlink pairs to create links, the paths
         will be relative to the store root path.
     """
 
     CONFIG_SECTION = 'RPMStore'
     DEFAULT_CONFIG = {
         'distro_reg': r'\.(fc|el)\d+(?=\w*)',
-        'temp_dir': 'generate',
+        'extra_symlinks': '',
         'path_prefix': 'rpm,src',
+        'rpm_dir': 'rpm',
         'signing_key': '',
         'signing_passphrase': 'ask',
+        'temp_dir': 'generate',
         'with_sources': 'false',
         'with_srcrpms': 'true',
-        'extra_symlinks': '',
     }
 
     def __init__(self, config, repo_path=None):
@@ -117,6 +127,7 @@ class RPMStore(ArtifactStore):
         self.rpms = RPMList()
         self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path
+        self.rpmdir = config.get('rpm_dir')
         self.to_copy = []
         self.distros = set()
         self.sign_key = config.get('signing_key')
@@ -204,9 +215,12 @@ class RPMStore(ArtifactStore):
                 dst_distros = [pkg.distro]
             for distro in dst_distros:
                 if pkg.distro == 'all':
-                    dst_path = self.path + '/' + pkg.generate_path() % distro
+                    dst_path = (
+                        self.path + '/'
+                        + pkg.generate_path(self.rpmdir) % distro
+                    )
                 else:
-                    dst_path = self.path + '/' + pkg.generate_path()
+                    dst_path = self.path + '/' + pkg.generate_path(self.rpmdir)
                 save_file(pkg.path, dst_path)
                 pkg.path = dst_path
         if self.sign_key:
@@ -269,7 +283,10 @@ class RPMStore(ArtifactStore):
     def createrepo(dst_dir):
         with open(os.devnull, 'w') as devnull:
             res = subprocess.call(['createrepo', dst_dir], stdout=devnull)
-        return res
+        if res != 0:
+            raise CreaterepoError(
+                "Createrepo failed on %s with rc %d" % (dst_dir, res)
+            )
 
     def createrepos(self):
         """
@@ -278,7 +295,7 @@ class RPMStore(ArtifactStore):
         procs = []
         for distro in self.distros:
             logger.info('  Creating metadata for %s', distro)
-            dst_dir = self.path + '/rpm/' + distro
+            dst_dir = os.path.join(self.path, self.rpmdir, distro)
             new_proc = mp.Process(
                 target=self.createrepo,
                 args=(dst_dir,),
@@ -287,6 +304,8 @@ class RPMStore(ArtifactStore):
             procs.append(new_proc)
         for proc in procs:
             proc.join()
+            if proc.exitcode != 0:
+                raise CreatereposError("Failed to create some repos metadata")
 
     def delete_old(self, keep=1, noop=False):
         """

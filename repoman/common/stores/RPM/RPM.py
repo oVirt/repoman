@@ -160,7 +160,7 @@ class RPM(Artifact):
             return match.group()[1:]
         raise Exception('Unknown distro for %s' % release)
 
-    def generate_path(self):
+    def generate_path(self, base_dir='rpm'):
         """
         Returns the theoretical path that the rpm should be, instead of the
         current path it is. As explained at the module docs.
@@ -174,7 +174,8 @@ class RPM(Artifact):
         else:
             arch_path = self.arch
             arch_name = self.arch
-        return 'rpm/%s/%s/%s-%s-%s.%s.rpm' % (
+        return '%s/%s/%s/%s-%s-%s.%s.rpm' % (
+            base_dir,
             self.distro == 'all' and '%s' or self.distro,
             arch_path,
             self.name,
