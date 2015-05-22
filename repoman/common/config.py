@@ -145,3 +145,8 @@ class Config(object):
         new_config.config = self.config
         new_config.default_config = self.default_config
         return new_config
+
+    def add_to_section(self, section, option, value):
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, option, value)

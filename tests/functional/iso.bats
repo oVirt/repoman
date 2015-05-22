@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load helpers
+
 ISO_PATH="fixtures/dummy-project-1.2.3.iso"
 EXPECTED_ISO_PATH="iso/dummy-project/1.2.3/dummy-project-1.2.3.iso"
 ISO_BADPATH="fixtures/dummy-project-without-version.iso"
@@ -15,7 +17,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    [[ -f "$repo/$EXPECTED_ISO_PATH" ]]
+    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
 @test "iso: Add iso with wrong name" {
@@ -41,7 +43,7 @@ PGP_ID=bedc9c4be614e4ba
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    [[ -f "$repo/$EXPECTED_ISO_PATH" ]]
-    [[ -f "$repo/$EXPECTED_ISO_MD5_PATH" ]]
-    [[ -f "$repo/$EXPECTED_ISO_SIG_PATH" ]]
+    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
+    helpers.is_file "$repo/$EXPECTED_ISO_MD5_PATH"
+    helpers.is_file "$repo/$EXPECTED_ISO_SIG_PATH"
 }

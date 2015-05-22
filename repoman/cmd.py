@@ -24,23 +24,37 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-n', '--noop', action='store_true')
-    parser.add_argument('-c', '--config', action='store', default=None,
-                        help='Configuration file to use')
-    parser.add_argument('-t', '--temp-dir', action='store', default=None,
-                        help='Temporary directory to use, will generate it if '
-                        'not passed')
+    parser.add_argument(
+        '-c', '--config', action='store', default=None,
+        help='Configuration file to use',
+    )
+    parser.add_argument(
+        '-o', '--option', action='store', default=[], nargs=1,
+        help='Extra config option as in the config file, in the form '
+        'section.name=value',
+    )
+    parser.add_argument(
+        '-t', '--temp-dir', action='store', default=None,
+        help='Temporary directory to use, will generate it if not passed',
+    )
     parser.add_argument(
         '-s', '--stores', required=False, default=','.join(STORES.keys()),
         help='Store classes to take into account when loading the '
         'repo. Available ones are %s' % ', '.join(STORES.keys()))
     parser.add_argument('dir', help='Directory of the repo.')
-    parser.add_argument('-k', '--key', required=False,
-                        help='Path to the key to use when signing, will '
-                        'not sign any rpms if not passed.')
-    parser.add_argument('--passphrase', required=False, default='ask',
-                        help='Passphrase to unlock the singing key')
-    parser.add_argument('--with-sources', required=False, action='store_true',
-                        help='Generate the sources tree.')
+    parser.add_argument(
+        '-k', '--key', required=False,
+        help='Path to the key to use when signing, will not sign any rpms if '
+        'not passed.'
+    )
+    parser.add_argument(
+        '--passphrase', required=False, default='ask',
+        help='Passphrase to unlock the singing key'
+    )
+    parser.add_argument(
+        '--with-sources', required=False, action='store_true',
+        help='Generate the sources tree.'
+    )
     repo_subparser = parser.add_subparsers(dest='repoaction')
     add_rpm = repo_subparser.add_parser('add', help='Add an artifact')
     add_rpm.add_argument(
@@ -59,24 +73,31 @@ def parse_args():
     generate_src = repo_subparser.add_parser(
         'generate-src',
         help='Populate the src dir with the tarballs from the src.rpm '
-        'files in the repo')
-    generate_src.add_argument('-p', '--with-patches', action='store_true',
-                              help='Include the patch files')
+        'files in the repo'
+    )
+    generate_src.add_argument(
+        '-p', '--with-patches', action='store_true',
+        help='Include the patch files'
+    )
 
     repo_subparser.add_parser(
         'createrepo',
-        help='Run createrepo on each distro repository.')
+        help='Run createrepo on each distro repository.'
+    )
 
     remove_old = repo_subparser.add_parser(
         'remove-old',
-        help='Remove old versions of packages.')
-    remove_old.add_argument('-k', '--keep', action='store',
-                            default=1, help='Number of versions to '
-                            'keep')
+        help='Remove old versions of packages.'
+    )
+    remove_old.add_argument(
+        '-k', '--keep', action='store', default=1,
+        help='Number of versions to keep'
+    )
 
     repo_subparser.add_parser(
         'sign-rpms',
-        help='Sign all the packages.')
+        help='Sign all the packages.'
+    )
     return parser.parse_args()
 
 
@@ -99,6 +120,16 @@ def main():
         config = Config(path=args.config)
     else:
         config = Config()
+
+    # handle all the custom options
+    for opt_val in args.option:
+        if '=' not in opt_val:
+            raise Exception('Invalid option passed %s' % opt_val)
+        opt, val = opt_val.split('=')
+        if '.' not in opt:
+            raise Exception('Invalid option passed %s' % opt_val)
+        sect, opt = opt.rsplit('.', 1)
+        config.add_to_section(sect, opt, val)
 
     if args.dir.endswith('/'):
         path = args.dir[:-1]

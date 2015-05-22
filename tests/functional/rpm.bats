@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+load helpers
+
 UNSIGNED_RPM=fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 SIGNED_RPM=fixtures/signed_rpm-1.0-1.fc21.x86_64.rpm
@@ -46,7 +48,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
-    [[ -f "$repo/$UNSIGNED_RPM_EXPECTED_PATH" ]]
+    helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
 }
 
 @test "rpm: Add simple signed rpm" {
@@ -54,7 +56,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
 @test "rpm: Add rpm without distro" {
@@ -72,7 +74,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
-    [[ -f "$repo/$UNSIGNED_SRPM_EXPECTED_PATH" ]]
+    helpers.is_file "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
 }
 
 @test "rpm: Add simple signed srpm" {
@@ -80,7 +82,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
-    [[ -f "$repo/$SIGNED_SRPM_EXPECTED_PATH" ]]
+    helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
 }
 
 @test "rpm: Don't add srcrpm if conf says not to" {
@@ -98,8 +100,8 @@ EOC
             add \
                 "$BATS_TEST_DIRNAME/$SIGNED_SRPM" \
                 "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    ! [[ -f "$repo/$SIGNED_SRPM_EXPECTED_PATH" ]]
-    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
+    ! helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
 @test "rpm: Generate metadata only once" {
@@ -164,9 +166,9 @@ EOC
         add "$BATS_TEST_DIRNAME/$FULL_SRPM"
     for gen_file in "${FULL_SRPM_FILES}"; do
         echo "Checking $gen_file"
-        [[ -f "$repo/src/$FULL_SRPM_NAME/$gen_file" ]]
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file"
         echo "Checking $gen_file.sig"
-        [[ -f "$repo/src/$FULL_SRPM_NAME/$gen_file.sig" ]]
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file.sig"
     done
 }
 
@@ -180,9 +182,9 @@ EOC
         add "$BATS_TEST_DIRNAME/$FULL_SRPM"
     for gen_file in "${FULL_SRPM_FILES}"; do
         echo "Checking $gen_file"
-        [[ -f "$repo/src/$FULL_SRPM_NAME/$gen_file" ]]
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file"
         echo "Checking that $gen_file.sig waas not generated"
-        ! [[ -f "$repo/src/$FULL_SRPM_NAME/$gen_file.sig" ]]
+        ! helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file.sig"
     done
 }
 
@@ -203,9 +205,9 @@ EOC
         "$repo" \
             add \
                 "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
-    [[ -L "$repo/two" ]]
-    [[ -L "$repo/four" ]]
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.is_link "$repo/two"
+    helpers.is_link "$repo/four"
     two_dst="$(readlink "$repo/two")"
     [[ "$repo/one" == "$two_dst" ]]
     four_dst="$(readlink "$repo/four")"
@@ -229,8 +231,8 @@ EOC
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     echo "$output"
     [[ "$status" == '0' ]]
-    [[ -f "$repo/$SIGNED_RPM_EXPECTED_PATH" ]]
-    [[ -L "$repo/imalink" ]]
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.is_link "$repo/imalink"
     link_dst="$(readlink "$repo/imalink")"
     [[ "$repo/idontexist" == "$link_dst" ]]
     [[ "$output" =~ ^.*WARNING:.*The\ link\ points\ to\ non-existing\ path.*$ ]]
@@ -255,5 +257,24 @@ EOC
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     echo "$output"
     [[ "$status" == '0' ]]
-    [[ -f "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}" ]]
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
+}
+@test "rpm: use custom rpm dir name" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat > "$conf" <<EOC
+[store.RPMStore]
+rpm_dir=custom_name
+EOC
+    run repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    echo "$output"
+    [[ "$status" == '0' ]]
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
 }
