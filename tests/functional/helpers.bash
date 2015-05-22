@@ -23,3 +23,8 @@ helpers.is_link() {
     echo "is link $what"
     [[ -L "$what" ]]
 }
+
+helpers.run() {
+    run "$@"
+    echo "$output"
+}

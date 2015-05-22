@@ -83,7 +83,9 @@ class RPMStore(ArtifactStore):
         by commas
 
       rpm_dir
-        name of the directory that will contain the rpms (rpm by default)
+        name of the directory that will contain the rpms (rpm by default), if
+        empty, it will not create a subdirectory for the rpms and will be put
+        on the root of the repo (root/$dist/$arch/*rpm)
 
       signing_key
         Path to the gpg keey to sign the rpms with, will not sign them if not

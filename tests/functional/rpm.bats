@@ -63,8 +63,7 @@ PGP_ID=bedc9c4be614e4ba
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    run repoman "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
-    echo "$output"
+    helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     [[ "$output" =~ Unknown\ distro ]]
     [[ "$status" -eq 1 ]]
 }
@@ -108,8 +107,7 @@ EOC
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    run repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    echo "$output"
+    helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     [[ "$output" =~ ^.*(Creating\ metadata.*)$ ]]
     ! [[ "$output" =~ ^.*(Creating\ metadata.*){2}$ ]]
 }
@@ -127,8 +125,7 @@ EOC
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
-    run rpm -qpi "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
-    echo "$output"
+    helpers.run rpm -qpi "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
     [[ "$output" =~ ^.*Key\ ID\ $PGP_ID.*$ ]]
 }
 
@@ -145,8 +142,7 @@ EOC
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
-    run rpm -qpi "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
-    echo "$output"
+    helpers.run rpm -qpi "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
     [[ "$output" =~ ^.*Key\ ID\ $PGP_ID.*$ ]]
 }
 
@@ -214,6 +210,7 @@ EOC
     [[ "$repo/three" == "$four_dst" ]]
 }
 
+
 @test "rpm: Warn if symlink path exists or origin does not" {
     local repo \
         conf
@@ -224,12 +221,11 @@ EOC
 [store.RPMStore]
 extra_symlinks=idontexist:imalink,rpm:imalink
 EOC
-    run repoman \
+    helpers.run repoman \
         --config "$conf" \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    echo "$output"
     [[ "$status" == '0' ]]
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
     helpers.is_link "$repo/imalink"
@@ -250,15 +246,16 @@ EOC
 [store.RPMStore]
 rpm_dir=custom_name
 EOC
-    run repoman \
+    helpers.run repoman \
         --config "$conf" \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    echo "$output"
     [[ "$status" == '0' ]]
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
 }
+
+
 @test "rpm: use custom rpm dir name" {
     local repo \
         conf
@@ -269,12 +266,31 @@ EOC
 [store.RPMStore]
 rpm_dir=custom_name
 EOC
-    run repoman \
+    helpers.run repoman \
         --config "$conf" \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    echo "$output"
     [[ "$status" == '0' ]]
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
+}
+
+
+@test "rpm: use no rpm subdirectoy" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    cat > "$conf" <<EOC
+[store.RPMStore]
+rpm_dir=
+EOC
+    helpers.run repoman \
+        --config "$conf" \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    [[ "$status" == '0' ]]
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH#rpm/}"
 }

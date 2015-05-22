@@ -174,9 +174,9 @@ class RPM(Artifact):
         else:
             arch_path = self.arch
             arch_name = self.arch
-        return '%s/%s/%s/%s-%s-%s.%s.rpm' % (
-            base_dir,
-            self.distro == 'all' and '%s' or self.distro,
+        return '%s%s/%s/%s-%s-%s.%s.rpm' % (
+            base_dir + '/' if base_dir else '',
+            '%s' if self.distro == 'all' else self.distro,
             arch_path,
             self.name,
             self.version,

@@ -6,15 +6,13 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
 load helpers
 
 @test "basic: Command help is shown without errors" {
-    run repoman -h
-    echo "$output"
+    helpers.run repoman -h
     [[ $status -eq 0 ]]
     [[ ${output} =~ ^.*usage:\ repoman ]]
 }
 
 @test "basic: Wrong parameters returns error" {
-    run repoman --dontexist
-    echo "$output"
+    helpers.run repoman --dontexist
     [[ $status -eq 2 ]]
 }
 
