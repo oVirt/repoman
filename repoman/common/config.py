@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+import os
+import logging
+
 from six.moves import StringIO
 from six.moves import configparser as cp
-import os
+
 from .stores import STORES
 from .filters import FILTERS
 from .sources import SOURCES
@@ -17,6 +20,11 @@ stores = all
 filters = all
 sources = all
 """
+
+logger = logging.getLogger(__name__ )  # flake8: noqa
+
+
+class BadConfigError(Exception): pass  # flake8: noqa
 
 
 def update_conf_from_plugin(config, plugins, prefix):
@@ -48,10 +56,13 @@ class Config(object):
         self.config = cp.SafeConfigParser()
         self.config.add_section(self.section)
         if path:
-            self.load(path)
+            res = self.load(path)
+            if not res:
+                raise BadConfigError('Unable to load config %s' % path)
         self.default_config = cp.SafeConfigParser()
         self.default_config.readfp(StringIO(DEFAULT_CONFIG))
         self.load_plugins()
+        logger.debug(self)
 
     def load_plugins(self):
         # load all the configs from the plugins, on their sections
@@ -150,3 +161,26 @@ class Config(object):
         if not self.config.has_section(section):
             self.config.add_section(section)
         self.config.set(section, option, value)
+
+    def __str__(self):
+        my_str = '### Defaults:'
+        for section in self.default_config.sections():
+            my_str += "\n[%s]\n" % section
+            for option in self.default_config.options(section):
+                my_str += "%s = %s\n" % (
+                    option,
+                    self.default_config.get(section, option),
+                )
+
+        my_str += '\n\n### Config'
+        for section in self.config.sections():
+            my_str += "\n[%s]\n" % section
+            for option in self.config.options(section):
+                my_str += "%s = %s\n" % (
+                    option,
+                    self.config.get(section, option, ''),
+                )
+
+        my_str += '\n'
+
+        return my_str

@@ -64,7 +64,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
-    [[ "$output" =~ Unknown\ distro ]]
+    helpers.contains "$output" 'Unknown distro'
     [[ "$status" -eq 1 ]]
 }
 
@@ -108,8 +108,8 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    [[ "$output" =~ ^.*(Creating\ metadata.*)$ ]]
-    ! [[ "$output" =~ ^.*(Creating\ metadata.*){2}$ ]]
+    helpers.contains "$output" '^.*(Creating metadata.*)$'
+    ! helpers.contains "$output" '^.*(Creating metadata.*){2}$'
 }
 
 @test "rpm: Add and sign one rpm" {
@@ -126,7 +126,7 @@ EOC
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
     helpers.run rpm -qpi "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
-    [[ "$output" =~ ^.*Key\ ID\ $PGP_ID.*$ ]]
+    helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
 @test "rpm: Add and sign one srpm" {
@@ -143,7 +143,7 @@ EOC
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
     helpers.run rpm -qpi "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
-    [[ "$output" =~ ^.*Key\ ID\ $PGP_ID.*$ ]]
+    helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
 @test "rpm: Add and sign one srpm with src generation" {
@@ -231,8 +231,12 @@ EOC
     helpers.is_link "$repo/imalink"
     link_dst="$(readlink "$repo/imalink")"
     helpers.equals "$repo/idontexist" "$repo/$link_dst"
-    [[ "$output" =~ ^.*WARNING:.*The\ link\ points\ to\ non-existing\ path.*$ ]]
-    [[ "$output" =~ ^.*WARNING:.*Path\ for\ the\ link\ already\ exists.*$ ]]
+    helpers.contains \
+        "$output" \
+        '^.*WARNING:.*The link points to non-existing path.*$'
+    helpers.contains \
+        "$output" \
+        '^.*WARNING:.*Path for the link already exists.*$'
 }
 
 

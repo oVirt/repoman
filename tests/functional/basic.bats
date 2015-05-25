@@ -8,14 +8,13 @@ load helpers
 @test "basic: Command help is shown without errors" {
     helpers.run repoman -h
     helpers.equals "$status" "0"
-    [[ ${output} =~ ^.*usage:\ repoman ]]
+    helpers.contains "${output}" '^.*usage: repoman'
 }
 
 @test "basic: Wrong parameters returns error" {
     helpers.run repoman --dontexist
     helpers.equals "$status" "2"
 }
-
 
 @test "basic: Conf options can be passed by command line" {
     local repo
@@ -26,4 +25,16 @@ load helpers
         "$repo" \
         add "$BATS_TEST_DIRNAME/$BASE_RPM"
     helpers.is_file "$repo/$BASE_RPM_EXPECTED_PATH"
+}
+
+@test "basic: Fail if bad conf is passed" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    helpers.run repoman \
+        --config idontexist \
+        "$repo" \
+        add "$BATS_TEST_DIRNAME/$BASE_RPM"
+    helpers.equals "$status" "1"
+    helpers.contains "$output" "Unable to load config idontexist"
 }
