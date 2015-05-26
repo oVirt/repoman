@@ -134,6 +134,8 @@ class RPMStore(ArtifactStore):
         self.distros = set()
         self.sign_key = config.get('signing_key')
         self.sign_passphrase = config.get('signing_passphrase')
+        # init first, add existing repo after
+        super(RPMStore, self).__init__(config=config)
         if repo_path:
             logger.info('Loading repo %s', repo_path)
             for pkg in list_files(repo_path, '.rpm'):
@@ -143,7 +145,6 @@ class RPMStore(ArtifactStore):
                     hidelog=True,
                 )
             logger.info('Repo %s loaded', repo_path)
-        super(RPMStore, self).__init__(config=config)
 
     @property
     def path_prefix(self):

@@ -4,6 +4,8 @@ load helpers
 
 UNSIGNED_RPM=fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
+UNSIGNED_RPM2=fixtures/unsigned_rpm-1.0-2.fc21.x86_64.rpm
+UNSIGNED_RPM2_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
 SIGNED_RPM=fixtures/signed_rpm-1.0-1.fc21.x86_64.rpm
 SIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
 NO_DISTRO_RPM=fixtures/unsigned_rpm-1.0-1.x86_64.rpm
@@ -297,4 +299,25 @@ EOC
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.equals "$status" '0'
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH#rpm/}"
+}
+
+
+@test "rpm: add package to existing repo" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+   helpers.run repoman \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    helpers.equals "$status" '0'
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.run repoman \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2"
+    helpers.equals "$status" '0'
+    helpers.is_file "$repo/$UNSIGNED_RPM2_EXPECTED_PATH"
 }
