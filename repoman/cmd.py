@@ -29,7 +29,7 @@ def parse_args():
         help='Configuration file to use',
     )
     parser.add_argument(
-        '-o', '--option', action='store', default=[], nargs=1,
+        '-o', '--option', action='append', default=[],
         help='Extra config option as in the config file, in the form '
         'section.name=value',
     )
