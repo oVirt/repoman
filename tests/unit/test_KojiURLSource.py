@@ -20,7 +20,10 @@ class KojiMock(object):
             assert self._tag == tag
         if self._package is not None:
             assert self._package == package
-        return [{'build_id': build} for build in self._builds]
+        return [
+            {'build_id': build, 'tag_name': build.tag}
+            for build in self._builds
+        ]
 
     def getBuild(self, nvr):
         return {'build_id': self._builds[0]}
@@ -38,23 +41,25 @@ class KojiMock(object):
     def rpm(self, rpm):
         return rpm.rpm
 
-    def get_mock_expected(self):
+    def get_mock_expected(self, with_inheritance=False):
         return [
             build[0].name + '/' + rpm.rpm
             for build in self._builds
             for rpm in build
+            if with_inheritance or build.tag == self._tag
         ]
 
 
 class Build(object):
-    def __init__(self, packages):
+    def __init__(self, packages, tag):
         self.packages = packages
+        self.tag = tag
 
     def __getitem__(self, item):
         return self.packages[item]
 
     def __repr__(self):
-        return 'Build(%s)' % str(self.packages)
+        return 'Build(tag=%s, packages=%s)' % (self.tag, str(self.packages))
 
     def __len__(self):
         return len(self.packages)
@@ -64,9 +69,10 @@ class Build(object):
 
 
 class Package(object):
-    def __init__(self, name, rpm):
+    def __init__(self, name, rpm, tag=None):
         self.name = name
         self.rpm = rpm
+        self.tag = tag
 
     def __repr__(self):
         return 'Package(name="%s", rpm="%s")' % (self.name, self.rpm)
@@ -82,23 +88,59 @@ class ConfigMock(object):
         'koji:@tagonly',
         KojiMock(
             builds=(
-                Build([Package('pkg1', 'rpm1')]),
-                Build([Package('pkg2', 'rpm2'), Package('pkg3', 'rpm3')]),
+                Build(tag='tagonly', packages=[Package('pkg1', 'rpm1')]),
+                Build(
+                    tag='inherited_tag',
+                    packages=[Package('pkg2', 'rpm2'), Package('pkg3', 'rpm3')]
+                ),
             ),
             tag='tagonly',
         ),
+        False,
+    ),
+    (
+        'koji:@tagonly@inherit',
+        KojiMock(
+            builds=(
+                Build(tag='tagonly', packages=[Package('pkg1', 'rpm1')]),
+                Build(
+                    tag='inherited_tag',
+                    packages=[Package('pkg2', 'rpm2'), Package('pkg3', 'rpm3')]
+                ),
+            ),
+            tag='tagonly',
+        ),
+        True,
+    ),
+    (
+        'koji:@tagonly@inherit',
+        KojiMock(
+            builds=(
+                Build(tag='tagonly', packages=[Package('pkg1', 'rpm1')]),
+                Build(
+                    tag='tagonly',
+                    packages=[Package('pkg2', 'rpm2'), Package('pkg3', 'rpm3')]
+                ),
+            ),
+            tag='tagonly',
+        ),
+        True,
     ),
     (
         'koji:name@tag',
         KojiMock(
-            builds=(Build([Package('pkg4', 'rpm4')]),),
+            builds=(Build(tag='tag', packages=[Package('pkg4', 'rpm4')]),),
             tag='tag',
             package='name',
-        )
+        ),
+        True,
     ),
     (
         'koji:name-ver-rel',
-        KojiMock(builds=(Build([Package('pkg5', 'rpm5')]),)),
+        KojiMock(
+            builds=(Build(tag='tag', packages=[Package('pkg5', 'rpm5')]),)
+        ),
+        True,
     ),
 ])
 def koji_data(request):
@@ -106,20 +148,22 @@ def koji_data(request):
 
 
 def test_sources(monkeypatch, koji_data):
-    source_str, koji_mock = koji_data
+    source_str, koji_mock, with_inheritance = koji_data
     monkeypatch.setattr(kojibuild, 'koji', koji_mock)
     monkeypatch.setattr(kojibuild, 'has_store', lambda x, y: True)
     koji_source = kojibuild.KojiBuildSource(config=ConfigMock(), stores=None)
     _, artifacts = koji_source.expand(source_str)
-    assert artifacts == koji_mock.get_mock_expected()
+    assert artifacts == koji_mock.get_mock_expected(with_inheritance)
 
 
-def test_filters_are_etracted(monkeypatch):
+def test_filters_are_extracted(monkeypatch):
     source_str = 'koji:name-version-release:whatever:filters'
-    koji_mock = KojiMock(builds=(Build([Package('pkg6', 'rpm6')]),))
+    koji_mock = KojiMock(
+        builds=(Build(tag='tag', packages=[Package('pkg6', 'rpm6')]),)
+    )
     monkeypatch.setattr(kojibuild, 'koji', koji_mock)
     monkeypatch.setattr(kojibuild, 'has_store', lambda x, y: True)
     koji_source = kojibuild.KojiBuildSource(config=ConfigMock(), stores=None)
     extracte_filters, artifacts = koji_source.expand(source_str)
-    assert artifacts == koji_mock.get_mock_expected()
+    assert artifacts == koji_mock.get_mock_expected(with_inheritance=True)
     assert extracte_filters == 'whatever:filters'

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """
 
-koji:[name]@tag
+koji:name@tag
+koji:@tag[@inherit]
 koji:name-version-release
 
 Handles koji builds
@@ -29,8 +30,9 @@ class KojiBuildSource(ArtifactSource):
     @classmethod
     def formats_list(cls):
         return (
-            "koji:[name]@tag",
-            "koji:name-version-release"
+            "koji:name@tag",
+            "koji:@tag[@inherit]",
+            "koji:name-version-release",
         )
 
     def expand(self, source_str):
@@ -48,7 +50,17 @@ class KojiBuildSource(ArtifactSource):
         topurl = self.config.get('koji_topurl')
         if source.startswith('@'):
             tag = source[1:]
+            inherit = False
+            if tag.endswith('@inherit'):
+                inherit = True
+                tag = tag.rsplit('@', 1)[0]
             builds = client.getLatestBuilds(tag=tag)
+            if not inherit:
+                builds = [
+                    build
+                    for build in builds
+                    if build['tag_name'] == tag
+                ]
         elif '@' in source:
             name, tag = source.split('@', 1)
             builds = client.getLatestBuilds(
