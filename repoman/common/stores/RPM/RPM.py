@@ -64,6 +64,10 @@ from ...artifact import (
 )
 
 
+class WrongDistroException(Exception):
+    pass
+
+
 class RPM(Artifact):
     def __init__(self, path, temp_dir='/tmp', distro_reg=r'\.(fc|el)\d+',
                  to_all_distros=(r'ovirt-release\d*', r'ovirt-guest-tools')):
@@ -111,7 +115,11 @@ class RPM(Artifact):
                                                                  self.name))):
             self.distro = 'all'
         else:
-            self.distro = self.get_distro(self.release, distro_reg)
+            try:
+                self.distro = self.get_distro(self.release, distro_reg)
+            except WrongDistroException:
+                logging.error('Malformed release string on %s', path)
+                raise
         self.arch = hdr[rpm.RPMTAG_ARCH] or 'none'
         # this property should uniquely identify a rpm entity, in the sense
         # that if you have two rpms with the same full_name they must package
@@ -158,7 +166,7 @@ class RPM(Artifact):
         match = re.search(distro_reg, release)
         if match:
             return match.group()[1:]
-        raise Exception('Unknown distro for %s' % release)
+        raise WrongDistroException('Unknown distro for %s' % release)
 
     def generate_path(self, base_dir='rpm'):
         """

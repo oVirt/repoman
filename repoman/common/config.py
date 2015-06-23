@@ -62,7 +62,6 @@ class Config(object):
         self.default_config = cp.SafeConfigParser()
         self.default_config.readfp(StringIO(DEFAULT_CONFIG))
         self.load_plugins()
-        logger.debug(self)
 
     def load_plugins(self):
         # load all the configs from the plugins, on their sections

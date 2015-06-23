@@ -262,26 +262,6 @@ EOC
 }
 
 
-@test "rpm: use custom rpm dir name" {
-    local repo \
-        conf
-    repo="$BATS_TMPDIR/myrepo"
-    conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
-    cat > "$conf" <<EOC
-[store.RPMStore]
-rpm_dir=custom_name
-EOC
-    helpers.run repoman \
-        --config "$conf" \
-        "$repo" \
-            add \
-            "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    helpers.equals "$status" '0'
-    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATH/rpm/custom_name}"
-}
-
-
 @test "rpm: use no rpm subdirectoy" {
     local repo \
         conf

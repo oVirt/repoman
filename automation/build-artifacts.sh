@@ -80,6 +80,8 @@ for file in $(find dist -iregex ".*\.\(tar\.gz\|rpm\)$"); do
     mv "$file" exported-artifacts/
 done
 
+rm -rf rpmbuild
+
 echo "#"
 echo "#  Building artifacts OK"
 echo "######################################################################"

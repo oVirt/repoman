@@ -52,6 +52,7 @@ class Repo(object):
         """
         self.path = os.path.abspath(path)
         self.config = config
+        logger.debug(config)
         for allowed_path in self.config.getarray('allowed_repo_paths'):
             if self.path.startswith(allowed_path):
                 break

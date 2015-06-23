@@ -73,4 +73,7 @@ class DirSource(ArtifactSource):
         if not os.path.isdir(source_str) \
            and has_store(source_str, self.stores):
             return filters_str, [source_str]
-        return filters_str, find_recursive(source_str, has_store)
+        return (
+            filters_str,
+            find_recursive(source_str, lambda x: has_store(x, self.stores))
+        )
