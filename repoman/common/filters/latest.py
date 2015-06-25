@@ -6,8 +6,13 @@ source:latest=N
 Get's the latest N rpms (1 by default)
 """
 import re
+import logging
+
 from . import ArtifactFilter
 from ..utils import split
+
+
+logger = logging.getLogger(__name__)  # pylint: noqa
 
 
 class LatestFilter(ArtifactFilter):
@@ -21,22 +26,20 @@ class LatestFilter(ArtifactFilter):
             return filters_str, art_list
         filters_str = split(filters_str, ':', 1)[-1]
         latest = match.groupdict().get('num', 1) or 1
+        stores = [store.get_empty_copy() for store in self.stores]
         # populate the stores with the artifacts
         for artifact in art_list:
-            store_name = next(
-                (
-                    s_name
-                    for (s_name, s_cls) in self.stores.iteritems()
-                    if s_cls.handles_artifact(artifact)
-                ),
-                None
-            )
-            if store_name is not None:
-                self.stores[store_name].add_artifact(artifact)
+            for store in stores:
+                if store.handles_artifact(artifact):
+                    store.add_artifact(artifact)
+                    # only add it to the first matching store
+                    break
         # gather the latest artifacts from each store
         filtered_arts = set()
-        for store in self.stores.itervalues():
+        for store in stores:
             filtered_arts = filtered_arts.union(
                 store.get_latest(num=int(latest))
             )
+        for artifact in filtered_arts:
+            logger.debug("Passed the filter: %s", artifact)
         return (filters_str, filtered_arts)

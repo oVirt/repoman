@@ -92,6 +92,12 @@ class ArtifactStore(object):
         :param num: number of newest versions to return
         """
 
+    def get_empty_copy(self):
+        """
+        Returns an empty copy of this store
+        """
+        return self.__class__(self.config)
+
 
 def has_store(artifact, stores):
     """

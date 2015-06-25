@@ -7,6 +7,13 @@ helpers.exists() {
     return $?
 }
 
+helpers.not_exists() {
+    local what="${1:?}"
+    echo "not exists $what"
+    ! [[ -e "$what" ]]
+    return $?
+}
+
 helpers.is_file() {
     local what="${1:?}"
     echo "is file $what"

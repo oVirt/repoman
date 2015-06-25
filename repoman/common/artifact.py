@@ -45,6 +45,7 @@ from abc import (
     ABCMeta,
     abstractproperty,
 )
+
 from .utils import (
     download,
     cmpfullver,

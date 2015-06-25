@@ -13,3 +13,4 @@ redhat-lsb-core
 rpm-python
 rpm-sign
 yum
+tree

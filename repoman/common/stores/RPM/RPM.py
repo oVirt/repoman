@@ -131,15 +131,15 @@ class RPM(Artifact):
         )
         # remove the distro from the release for the version string
         if self.distro:
-            self.ver_release = re.sub(
+            release = re.sub(
                 r'\.%s[^.]*' % self.distro,
                 '',
                 self.release,
                 1
             )
         else:
-            self.ver_release = self.release
-        self.ver_rel = '%s-%s' % (self.version, self.ver_release)
+            release = self.release
+        self.ver_rel = '%s-%s' % (self._version, release)
 
     @property
     def name(self):
@@ -147,7 +147,7 @@ class RPM(Artifact):
 
     @property
     def version(self):
-        return self._version
+        return self.ver_rel
 
     @property
     def extension(self):
@@ -187,7 +187,7 @@ class RPM(Artifact):
             '%s' if self.distro == 'all' else self.distro,
             arch_path,
             self.name,
-            self.version,
+            self._version,
             self.release,
             arch_name,
         )
@@ -226,7 +226,7 @@ class RPM(Artifact):
         different keys
         """
         return 'rpm(%s %s %s %s %s %s)' % (
-            self.name, self.version,
+            self.name, self._version,
             self.release, self.arch,
             self.is_source and 'src' or 'bin',
             self.signature and 'signed' or 'unsigned',

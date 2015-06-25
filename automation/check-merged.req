@@ -10,3 +10,4 @@ gnupg
 redhat-lsb-core
 libffi-devel
 openssl-devel
+tree
