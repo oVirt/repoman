@@ -61,6 +61,15 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
+@test "rpm: Add simple signed rpm to existing repo" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+}
+
 @test "rpm: Add rpm without distro" {
     local repo
     repo="$BATS_TMPDIR/myrepo"

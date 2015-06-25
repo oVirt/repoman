@@ -68,7 +68,7 @@ class DirSource(ArtifactSource):
                 return '', [orig_source_str]
         if allowed_paths and not any(path for path in allowed_paths
                                      if source_str.startswith(path)):
-            print allowed_paths
+            logging.error('Allowed paths: %s', allowed_paths)
             raise Exception('Source %s outside the base path' % source_str)
         if not os.path.isdir(source_str) \
            and has_store(source_str, self.stores):

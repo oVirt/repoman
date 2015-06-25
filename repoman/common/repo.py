@@ -64,8 +64,10 @@ class Repo(object):
         self.stores = dict([
             (
                 key,
-                val(config=self.config.get_section('store.' + key),
-                    repo_path=self.path)
+                val(
+                    config=self.config.get_section('store.' + key),
+                    repo_path=self.path
+                )
             )
             for (key, val) in STORES.iteritems()
             if key in self.stores or 'all' in self.stores

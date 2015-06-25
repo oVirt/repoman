@@ -126,6 +126,7 @@ class IsoStore(ArtifactStore):
         self.sign_passphrase = config.get('signing_passphrase')
         if self.sign_key and self.sign_passphrase == 'ask':
             self.sign_passphrase = getpass('Key passphrase: ')
+        super(IsoStore, self).__init__(config=config)
         if repo_path:
             logger.info('Loading repo %s', repo_path)
             for iso in list_files(repo_path, '.iso'):
@@ -135,7 +136,6 @@ class IsoStore(ArtifactStore):
                     hidelog=True,
                 )
             logger.info('Repo %s loaded', repo_path)
-        super(IsoStore, self).__init__(config=config)
 
     @property
     def path_prefix(self):

@@ -20,6 +20,16 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
+
+@test "iso: Add iso to an existing repo" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
+    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
+    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
+}
+
 @test "iso: Add iso with wrong name" {
     local repo \
         created_dirs
