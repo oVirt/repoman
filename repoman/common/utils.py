@@ -5,6 +5,7 @@ import shutil
 import logging
 import subprocess
 import glob
+import pprint
 
 import requests
 import gnupg
@@ -32,6 +33,22 @@ def gpg_get_keyuid(key_path):
         if key['fingerprint'] == fprint:
             keyuid = key['uids'][0]
     return keyuid
+
+
+def response2str(response):
+    return (
+        'URL: {url}\n'
+        'Status: {status_code}\n'
+        'Reason: {reason}\n'
+        'Headers: {headers}\n'
+        'Body: {text}\n'
+    ).format(
+        url=response.url,
+        status_code=response.status_code,
+        reason=response.reason,
+        headers=pprint.pformat(dict(response.headers)),
+        text=response.text.encode('utf-8'),
+    )
 
 
 def get_plugins(plugin_dir=None):
@@ -146,7 +163,7 @@ def to_human_size(fsize):
     return '%dB' % fsize
 
 
-def download(path, dest_path):
+def download(path, dest_path, tries=3):
     """
     Download a package from a url.
     """
@@ -159,7 +176,6 @@ def download(path, dest_path):
     num_dots = 100
     dot_frec = (length / num_dots) or 1
     stream = requests.get(path, stream=True)
-    tries = 3
     while not stream and tries:
         stream = requests.get(path, stream=True)
         tries -= 1
