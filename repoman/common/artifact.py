@@ -277,6 +277,7 @@ class ArtifactList(dict, object):
         :param fmatch: Filter function, must return True for packages to be
             included, or False to be excluded. The package object will be
             passed as parameter
+        :param latest: number of latest versions to return (0 for all,)
         """
         arts = []
         for version in self.itervalues():

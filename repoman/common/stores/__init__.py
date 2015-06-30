@@ -98,6 +98,18 @@ class ArtifactStore(object):
         """
         return self.__class__(self.config)
 
+    @abstractmethod
+    def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
+        """
+        Returns the list of artifacts matching the params
+
+        :param regmatch: Regular expression to filter the rpms path with
+        :param fmatch: Filter function, must return True for packages to be
+            included, or False to be excluded. The package object will be
+            passed as parameter
+        :param latest: number of latest versions to return (0 for all,)
+        """
+
 
 def has_store(artifact, stores):
     """

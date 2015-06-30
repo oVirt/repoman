@@ -48,6 +48,9 @@ class ArtifactFilter(object):
     def filter(self, filter_str, art_list):
         """
         Filters the given art_list according to filter_str and config
+
+        :param filter_str: string with the filter or filters to apply
+        :param art_list: list of expanded artifacts
         """
         pass
 
