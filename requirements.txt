@@ -7,7 +7,7 @@ six
 pexpect
 # Needed but not in pip, install rpm-python
 # will use system installed lib for the functional tests
-#rpm_python
+#rpm-python
 # Same with koji, you have to install the client
 #koji
 # koji deps

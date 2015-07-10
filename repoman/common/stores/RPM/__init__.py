@@ -185,12 +185,16 @@ class RPMStore(ArtifactStore):
             if to_copy:
                 self.to_copy.append(pkg)
             if not hidelog:
-                logger.info('Adding package %s to repo %s', pkg.path,
-                            self.path)
+                logger.info(
+                    'Adding package %s to repo %s', pkg.path, self.path,
+                )
         else:
             if not hidelog:
-                logger.info("Not adding %s, there's already an equal or "
-                            "newer version", pkg)
+                logger.info(
+                    "Not adding %s, there's already an equal or newer "
+                    "version",
+                    pkg,
+                )
         if pkg.distro != 'all':
             self.distros.add(pkg.distro)
 
@@ -206,13 +210,17 @@ class RPMStore(ArtifactStore):
         logger.info('Saving new added rpms into %s', self.path)
         for pkg in self.to_copy:
             if onlylatest and not self.is_latest_version(pkg):
-                logger.info('Skipping %s a newer version is already '
-                            'in the repo.', pkg)
+                logger.info(
+                    'Skipping %s a newer version is already in the repo.',
+                    pkg,
+                )
                 continue
             if pkg.distro == 'all':
                 if not self.distros:
-                    raise Exception('No distros found in the repo and no '
-                                    'packages with any distros added.')
+                    raise Exception(
+                        'No distros found in the repo and no packages with '
+                        'any distros added.'
+                    )
                 dst_distros = self.distros
             else:
                 dst_distros = [pkg.distro]

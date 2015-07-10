@@ -1,6 +1,10 @@
 #!/bin/bash -e
 
-
+SAME_RPM_NAME=(
+    'pyOpenSSL'
+    'rpm-python'
+    'koji'
+)
 PEXPECT_SPEC='
 %if 0%{?fedora} >= 1
 Requires: python-pexpect
@@ -8,6 +12,17 @@ Requires: python-pexpect
 Requires: pexpect
 %endif
 '
+
+is_in() {
+    what="${1?}"
+    where=("${@:2}")
+    for word in "${where[@]}"; do
+        if [[ "$word" == "$what" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
 
 echo "######################################################################"
@@ -31,11 +46,12 @@ sed -i \
   -e 's/Release: \(.*\)/Release: \1%{?dist}/' \
   dist/repoman.spec
 
-for requirement in $(grep -v -e '^\s*#' requirements.txt); do
+for requirement in $(grep -v -e '^\s*# ' requirements.txt); do
     requirement="${requirement%%<*}"
     requirement="${requirement%%>*}"
     requirement="${requirement%%=*}"
-    if [[ "$requirement" == "pyOpenSSL" ]]; then
+    requirement="${requirement##*#}"
+    if is_in "$requirement" "${SAME_RPM_NAME[@]}"; then
         sed \
             -i \
             -e "s/Url: \(.*\)/Url: \1\nRequires:$requirement/" \
@@ -95,6 +111,7 @@ if which yum-deprecated &>/dev/null; then
 else
     yum install exported-artifacts/*rpm
 fi
+repoman -h
 
 echo "#"
 echo "# Installation OK"
