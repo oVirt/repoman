@@ -285,9 +285,9 @@ def sign_file(gpg, fname, keyid, passphrase, detach=True):
                 binary=False,
             )
         except AttributeError:
-            signature = gpg.sign(
-                data=f_desc,
-                default_key=keyid,
+            signature = gpg.sign_file(
+                f_desc,
+                keyid=keyid,
                 passphrase=passphrase,
                 detach=True,
                 clearsign=False,

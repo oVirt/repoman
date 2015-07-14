@@ -1,5 +1,5 @@
 argparse
-gnupg
+python-gnupg
 requests
 urllib3
 pbr>=0.8.2,<1.0

@@ -4,6 +4,7 @@ SAME_RPM_NAME=(
     'pyOpenSSL'
     'rpm-python'
     'koji'
+    'python-gnupg'
 )
 PEXPECT_SPEC='
 %if 0%{?fedora} >= 1
