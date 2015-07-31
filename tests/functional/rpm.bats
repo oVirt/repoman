@@ -13,6 +13,7 @@ UNSIGNED_SRPM=fixtures/unsigned_rpm-1.0-1.fc21.src.rpm
 UNSIGNED_SRPM_EXPECTED_PATH=rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
 SIGNED_SRPM=fixtures/signed_rpm-1.0-1.fc21.src.rpm
 SIGNED_SRPM_EXPECTED_PATH=rpm/fc21/SRPMS/signed_rpm-1.0-1.fc21.src.rpm
+SOURCE_REPO1=fixtures/testdir1
 FULL_SRPM=fixtures/kexec-tools-2.0.4-32.1.el7.src.rpm
 FULL_SRPM_NAME=kexec-tools
 FULL_SRPM_FILES=(
@@ -104,14 +105,12 @@ PGP_ID=bedc9c4be614e4ba
 [store.RPMStore]
 with_srcrpms=False
 EOC
-    repoman \
-        --config "$conf" \
-        "$repo" \
-            add \
-                "$BATS_TEST_DIRNAME/$SIGNED_SRPM" \
-                "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    ! helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
-    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.run \
+        repoman \
+            --config "$conf" \
+            "$repo" \
+                add "dir:$BATS_TEST_DIRNAME/$SOURCE_REPO1" \
+    ! find "$repo/$SIGNED_SRPM_EXPECTED_PATH" -iname '*.src.rpm'
 }
 
 @test "rpm: Generate metadata only once" {

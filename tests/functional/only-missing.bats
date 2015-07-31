@@ -43,10 +43,13 @@ ONLY_MISSING_RPM_UNEXPECTED_PATHS3=(
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$ONLY_MISSING_REPO1"
     tree "$repo"
-    repoman \
-        -v \
-        "$repo" \
-        add "$BATS_TEST_DIRNAME/$ONLY_MISSING_REPO_BASE:only-missing"
+    helpers.run \
+        repoman \
+            -v \
+            "$repo" \
+            add "$BATS_TEST_DIRNAME/$ONLY_MISSING_REPO_BASE:only-missing"
+    helpers.equals "$status" "1"
+    helpers.contains "$output" "No artifacts found"
     tree "$repo"
     for expected in "${ONLY_MISSING_RPM_EXPECTED_PATHS1[@]}"; do
         helpers.is_file "$repo/$expected"

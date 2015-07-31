@@ -31,10 +31,23 @@ load helpers
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    helpers.run repoman \
-        --config idontexist \
-        "$repo" \
+    helpers.run \
+        repoman \
+            --config idontexist \
+            "$repo" \
         add "$BATS_TEST_DIRNAME/$BASE_RPM"
     helpers.equals "$status" "1"
     helpers.contains "$output" "Unable to load config idontexist"
+}
+
+@test "basic: Fail if no artifacts for source string" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    helpers.run \
+        repoman \
+            "$repo" \
+            add "$BATS_TEST_DIRNAME/$BASE_RPM.idontexist"
+    helpers.equals "$status" "1"
+    helpers.contains "$output" "No artifacts found"
 }

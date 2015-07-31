@@ -35,7 +35,12 @@ PGP_ID=bedc9c4be614e4ba
         created_dirs
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_BADPATH"
+    helpers.run \
+        repoman \
+            "$repo" \
+            add "$BATS_TEST_DIRNAME/$ISO_BADPATH"
+    helpers.equals "$status" "1"
+    helpers.contains "$output" "No artifacts found"
     shopt -s nullglob
     created_dirs=( "$repo"/* )
     [[ -z "$created_dirs" ]]

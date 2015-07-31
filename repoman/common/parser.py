@@ -66,8 +66,8 @@ class Parser(object):
             result = source.expand(source_str)
             filters_str = result[0]
             art_list = result[1]
-            # If we have nothing to filter, keep try next source parser
             if not art_list:
+                # if no artifacts for this source type, try next
                 continue
             # check if there were any filters in the source definition, finish
             # if not
@@ -90,4 +90,8 @@ class Parser(object):
                     break
             # We skip all other sources if we found the matching one
             break
+        if not art_list:
+            msg = 'No artifacts found for source %s' % source_str
+            logger.error(msg)
+            raise Exception(msg)
         return art_list
