@@ -120,7 +120,7 @@ class IsoStore(ArtifactStore):
         self.name = self.__class__.__name__
         self.isos = ArtifactList('isos')
         self._path_prefix = config.get('path_prefix').split(',')
-        self.path = repo_path
+        self.path = repo_path or ('Non persisten %s' % self.name)
         self.to_copy = []
         self.sign_key = config.get('signing_key')
         self.sign_passphrase = config.get('signing_passphrase')

@@ -11,7 +11,7 @@ TEST_DIR1_EXPECTED_PATHS=(
 )
 
 
-@test "dir: Add simple dir" {
+@test "source.dir: Add simple dir" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"

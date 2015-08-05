@@ -128,7 +128,7 @@ class RPMStore(ArtifactStore):
         self.name = self.__class__.__name__
         self.rpms = RPMList()
         self._path_prefix = config.get('path_prefix').split(',')
-        self.path = repo_path
+        self.path = repo_path or ('Non persistent %s' % self.name)
         self.rpmdir = config.get('rpm_dir')
         self.to_copy = []
         self.distros = set()
@@ -235,22 +235,14 @@ class RPMStore(ArtifactStore):
                 save_file(pkg.path, dst_path)
                 pkg.path = dst_path
         if self.sign_key:
-            logger.info('')
-            logger.info('Signing packages')
             self.sign_rpms()
         if self.config.getboolean('with_sources'):
-            logger.info('')
-            logger.info('Extracting sources')
             self.generate_sources(
                 with_patches=self.config.getboolean('with_sources'),
                 key=self.config.get('signing_key'),
                 passphrase=self.sign_passphrase,
             )
-        logger.info('')
-        logger.info('Updating metadata')
         self.createrepos()
-        logger.info('')
-        logger.info('Creating symlinks')
         self.create_symlinks()
         logger.info('')
         logger.info('Saved %s\n', self.path)
@@ -274,6 +266,8 @@ class RPMStore(ArtifactStore):
             create the detached signatures of the extracted sources
         :param passphrase: Passphrase to unlock the key
         """
+        logger.info('')
+        logger.info('Extracting sources')
         logger.info("Generating src directory from srpms")
         for versions in self.rpms.itervalues():
             for version in versions.itervalues():
@@ -303,6 +297,8 @@ class RPMStore(ArtifactStore):
         """
         Generate the yum repositories metadata
         """
+        logger.info('')
+        logger.info('Updating metadata')
         procs = []
         for distro in self.distros:
             logger.info('  Creating metadata for %s', distro)
@@ -350,10 +346,14 @@ class RPMStore(ArtifactStore):
         :param latest: If set to N>0, it will return only the N latest versions
             for each package
         """
+        logging.debug('RPMStore.get_rpms::regmatch=%s', regmatch)
+        logging.debug('RPMStore.get_rpms::fmatch=%s', fmatch)
+        logging.debug('RPMStore.get_rpms::latest=%s', latest)
         return self.rpms.get_artifacts(
             regmatch=regmatch,
             fmatch=fmatch,
-            latest=latest)
+            latest=latest,
+        )
 
     def get_latest(self, num=1):
         """
@@ -382,6 +382,8 @@ class RPMStore(ArtifactStore):
         """
         Sign all the unsigned rpms in the repo.
         """
+        logger.info('')
+        logger.info('Signing packages')
         try:
             # older gnupg versions
             gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
@@ -401,13 +403,20 @@ class RPMStore(ArtifactStore):
         for key in gpg.list_keys(True):
             if key['fingerprint'] == fprint:
                 keyuid = key['uids'][0]
+
+        for pkg in self.get_rpms():
+            logger.info('Got package %s', pkg)
         for pkg in self.get_rpms(
-                fmatch=lambda pkg: not pkg.signature):
+                fmatch=lambda pkg: not pkg.signature
+        ):
             pkg.sign(keyuid, passphrase)
+            logger.info('Got unsigned package %s', pkg)
         logger.info("Done signing")
 
     def create_symlinks(self):
         """Creates all the symlinks to the dirs passed on the config"""
+        logger.info('')
+        logger.info('Creating symlinks')
         symlinks = self.config.getarray('extra_symlinks')
         for symlink in symlinks:
             if ':' not in symlink:

@@ -126,7 +126,9 @@ class RPM(Artifact):
         # the same content or one of them is wrongly generated (the version was
         # not bumped or something)
         self.full_name = 'rpm(%s %s %s %s)' % (
-            self.name, self.distro, self.arch,
+            self.name,
+            self.distro,
+            self.arch,
             self.is_source and 'src' or 'bin',
         )
         # remove the distro from the release for the version string
@@ -140,6 +142,8 @@ class RPM(Artifact):
         else:
             release = self.release
         self.ver_rel = '%s-%s' % (self._version, release)
+#        if self.is_source:
+#            self.ver_rel += '-src'
 
     @property
     def name(self):
@@ -214,8 +218,10 @@ class RPM(Artifact):
             raise Exception("Failed to sign package.")
         self.__init__(self.path)
         if not self.signature:
-            raise Exception("Failed to sign rpm %s with key '%s'"
-                            % (self.path, keyuid))
+            raise Exception(
+                "Failed to sign rpm %s with key '%s'"
+                % (self.path, keyuid)
+            )
 
     def __str__(self):
         """
@@ -239,15 +245,41 @@ class RPM(Artifact):
 class RPMName(ArtifactName):
     """List of available versions for a package name"""
     def add_pkg(self, pkg, onlyifnewer):
-        if onlyifnewer and (
-            pkg.ver_rel in self or
-            next((ver for ver in self.keys()
-                  if cmpfullver(ver, pkg.ver_rel) >= 0), None)
-        ):
+        is_there_newer = next(
+            (
+                ver for ver in self.keys()
+                if cmpfullver(ver, pkg.ver_rel) >= 0
+            ),
+            False,
+        )
+        if onlyifnewer and (is_there_newer or pkg.ver_rel in self):
             return False
         elif pkg.ver_rel not in self:
             self[pkg.ver_rel] = ArtifactVersion(pkg.ver_rel)
         return self[pkg.ver_rel].add_pkg(pkg)
+
+    def get_latest(self, num=1):
+        """
+        Returns the list of available inodes for the latest version
+        if any
+        """
+        if not self:
+            return None
+        if not num:
+            num = len(self)
+        sorted_list = [
+            ver_name for ver_name, version in self.items()
+            if version.get_artifacts(
+                fmatch=lambda art: not art.is_source
+            )
+        ]
+        sorted_list.sort(cmp=cmpfullver)
+        latest = {}
+        if num > len(sorted_list):
+            num = len(sorted_list)
+        for pos in xrange(num):
+            latest[sorted_list[pos]] = self.get(sorted_list[pos])
+        return latest
 
 
 class RPMList(ArtifactList):

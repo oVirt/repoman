@@ -158,11 +158,19 @@ class ArtifactInode(list, object):
                              artifact.path)
 
     def get_artifacts(self, regmatch=None, fmatch=None):
-        arts = self
+        logging.debug('ArtifactInode.get_artifacts::%s', self)
+        arts = list(self)
+        logging.debug('ArtifactInode.get_artifacts::arts=%s', arts)
+        logging.debug('ArtifactInode.get_artifacts::fmatch=%s', fmatch)
+        logging.debug('ArtifactInode.get_artifacts::regmatch=%s', regmatch)
         if regmatch:
             arts = [art for art in self if regmatch.search(art.path)]
-        if fmatch:
+        elif fmatch:
             arts = [art for art in arts if fmatch(art)]
+        logging.debug(
+            'ArtifactInode.get_artifacts::after filter arts=%s',
+            arts,
+        )
         return arts
 
 
@@ -186,10 +194,17 @@ class ArtifactVersion(dict, object):
 
     def get_artifacts(self, regmatch=None, fmatch=None):
         arts = []
+        logging.debug('ArtifactVersion.get_artifarcts::regmatch=%s', regmatch)
+        logging.debug('ArtifactVersion.get_artifacts::fmatch=%s', fmatch)
         for inode in self.itervalues():
+            logging.debug(
+                'ArtifactVersion.get_artifacts::Iterating ArtifactInode %s',
+                inode,
+            )
             arts.extend(inode.get_artifacts(
                 regmatch=regmatch,
-                fmatch=fmatch))
+                fmatch=fmatch
+            ))
         return arts
 
 
@@ -242,10 +257,22 @@ class ArtifactName(dict, object):
 
     def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
         arts = []
-        for entry in self.get_latest(latest).itervalues():
-            arts.extend(entry.get_artifacts(
+        logging.debug('ArtifactName.get_artifarcts::regmatch=%s', regmatch)
+        logging.debug('ArtifactName.get_artifacts::fmatch=%s', fmatch)
+        logging.debug('ArtifactName.get_artifacts::latest=%s', latest)
+        if latest:
+            versions = self.get_latest(latest).values()
+        else:
+            versions = self.values()
+        for version in versions:
+            logging.debug(
+                'ArtifactName.get_artifacts::Iterating ArtifactVersion %s',
+                version,
+            )
+            arts.extend(version.get_artifacts(
                 regmatch=regmatch,
-                fmatch=fmatch))
+                fmatch=fmatch
+            ))
         return arts
 
 
@@ -280,9 +307,17 @@ class ArtifactList(dict, object):
         :param latest: number of latest versions to return (0 for all,)
         """
         arts = []
-        for version in self.itervalues():
-            arts.extend(version.get_artifacts(
+        logging.debug('ArtifactVersion.get_artifarcts::regmatch=%s', regmatch)
+        logging.debug('ArtifactVersion.get_artifacts::fmatch=%s', fmatch)
+        logging.debug('ArtifactVersion.get_artifacts::latest=%s', latest)
+        for name in self.itervalues():
+            logging.debug(
+                'ArtifactList.get_artifacts::Iterating ArtifactName %s',
+                name,
+            )
+            arts.extend(name.get_artifacts(
                 regmatch=regmatch,
                 fmatch=fmatch,
-                latest=latest))
+                latest=latest,
+            ))
         return arts

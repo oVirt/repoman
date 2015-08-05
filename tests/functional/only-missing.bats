@@ -16,28 +16,28 @@ ONLY_MISSING_RPM_UNEXPECTED_PATHS1=(
     iso/dummy-project/1.2.4/dummy-project-1.2.4.iso
 )
 ONLY_MISSING_RPM_EXPECTED_PATHS2=(
-    rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
-    rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
-    iso/dummy-project/1.2.3/dummy-project-1.2.3.iso
-    iso/dummy-project/1.2.4/dummy-project-1.2.4.iso
     iso/dummy-project/1.4/dummy-project-1.4.iso
 )
 ONLY_MISSING_RPM_UNEXPECTED_PATHS2=(
-)
-ONLY_MISSING_RPM_EXPECTED_PATHS3=(
+    rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
     rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     iso/dummy-project/1.2.3/dummy-project-1.2.3.iso
     iso/dummy-project/1.2.4/dummy-project-1.2.4.iso
+)
+ONLY_MISSING_RPM_EXPECTED_PATHS3=(
+    rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     iso/dummy-project/1.4/dummy-project-1.4.iso
 )
 ONLY_MISSING_RPM_UNEXPECTED_PATHS3=(
     rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
     rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
+    iso/dummy-project/1.2.3/dummy-project-1.2.3.iso
+    iso/dummy-project/1.2.4/dummy-project-1.2.4.iso
 )
 
 
-@test "only_missing: Simple only_missing filter, all artifacts already there" {
+@test "filter.only_missing: Simple only_missing filter, all artifacts already there" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
@@ -60,11 +60,13 @@ ONLY_MISSING_RPM_UNEXPECTED_PATHS3=(
 }
 
 
-@test "only_missing: Simple only_missing filter, no artifacts there yet" {
+@test "filter.only_missing: Simple only_missing filter, no artifacts there yet" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman \
+    tree "$repo"
+    tree "$BATS_TEST_DIRNAME/$ONLY_MISSING_REPO_BASE"
+    helpers.run repoman \
         -v \
         "$repo" \
         add "$BATS_TEST_DIRNAME/$ONLY_MISSING_REPO_BASE:only-missing"
@@ -78,7 +80,7 @@ ONLY_MISSING_RPM_UNEXPECTED_PATHS3=(
 }
 
 
-@test "only_missing: Simple only_missing filter, mix of existing and non-existing artifacts" {
+@test "filter.only_missing: Simple only_missing filter, mix of existing and non-existing artifacts" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"

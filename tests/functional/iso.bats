@@ -12,7 +12,7 @@ PGP_PASS=123456
 PGP_ID=bedc9c4be614e4ba
 
 
-@test "iso: Add iso" {
+@test "store.iso: Add iso" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
@@ -21,7 +21,7 @@ PGP_ID=bedc9c4be614e4ba
 }
 
 
-@test "iso: Add iso to an existing repo" {
+@test "store.iso: Add iso to an existing repo" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
@@ -30,7 +30,7 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
-@test "iso: Add iso with wrong name" {
+@test "store.iso: Add iso with wrong name" {
     local repo \
         created_dirs
     repo="$BATS_TMPDIR/myrepo"
@@ -46,7 +46,7 @@ PGP_ID=bedc9c4be614e4ba
     [[ -z "$created_dirs" ]]
 }
 
-@test "iso: Add and sign iso" {
+@test "store.iso: Add and sign iso" {
     local repo
     load utils
     if [[ "$(utils.distro)" == "Fedora 22" ]]; then

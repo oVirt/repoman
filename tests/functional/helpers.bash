@@ -36,6 +36,7 @@ helpers.is_link() {
 }
 
 helpers.run() {
+    echo "RUNNING:$@"
     run "$@"
     echo "$output"
     return 0

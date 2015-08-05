@@ -4,6 +4,9 @@ source:only-missing
 
 Gets only the artifacts that are not already there, getting only the ones
 that don't have already an artifact with the same name in the repo.
+
+It will take only the latest from the source repo if there are multiple
+versions available
 """
 import logging
 
@@ -32,19 +35,37 @@ class OnlyMissingFilter(ArtifactFilter):
                     # only add it to the first matching store
                     break
         # gather the latest artifacts from each store
-        filtered_arts = set()
+        filtered_art_paths = set()
+        filtered_art_names = set()
         for tmp_store in temp_stores:
-            for artifact in tmp_store.get_artifacts():
-                found = any(
+            for artifact in tmp_store.get_artifacts(latest=1):
+                if artifact.name in filtered_art_names:
+                    logger.debug(
+                        "Did not pass the filter, already checked: %s",
+                        artifact,
+                    )
+                    continue
+
+                def same_name(art1):
+                    return art1.name == artifact.name
+
+                already_in_dst_store = [
                     store.get_artifacts(
-                        fmatch=lambda x: x.name == artifact.name,
+                        fmatch=same_name,
+                        latest=1,
                     )
                     for store in self.stores
-                )
-                if not found:
-                    filtered_arts.add(artifact.path)
+                ]
+                if any(already_in_dst_store):
+                    logger.debug(
+                        (
+                            "Did not pass the filter, already in the "
+                            "destination: %s",
+                        ),
+                        artifact
+                    )
                 else:
-                    logger.debug("Did not pass the filter: %s", artifact.name)
-        for artifact in filtered_arts:
-            logger.debug("Passed the filter: %s", artifact)
-        return (filters_str, filtered_arts)
+                    filtered_art_paths.add(artifact.path)
+                    filtered_art_names.add(artifact.name)
+                    logger.debug("Passed the filter: %s", artifact)
+        return (filters_str, filtered_art_paths)

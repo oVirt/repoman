@@ -11,6 +11,8 @@ SIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
 NO_DISTRO_RPM=fixtures/unsigned_rpm-1.0-1.x86_64.rpm
 UNSIGNED_SRPM=fixtures/unsigned_rpm-1.0-1.fc21.src.rpm
 UNSIGNED_SRPM_EXPECTED_PATH=rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
+UNSIGNED_SRPM2=fixtures/unsigned_rpm-1.1-1.fc21.src.rpm
+UNSIGNED_SRPM2_EXPECTED_PATH=rpm/fc21/SRPMS/unsigned_rpm-1.1-1.fc21.src.rpm
 SIGNED_SRPM=fixtures/signed_rpm-1.0-1.fc21.src.rpm
 SIGNED_SRPM_EXPECTED_PATH=rpm/fc21/SRPMS/signed_rpm-1.0-1.fc21.src.rpm
 SOURCE_REPO1=fixtures/testdir1
@@ -46,57 +48,57 @@ PGP_PASS=123456
 PGP_ID=bedc9c4be614e4ba
 
 
-@test "rpm: Add simple unsigned rpm" {
+@test "store.rpm: Add simple unsigned rpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
     helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "rpm: Add simple signed rpm" {
+@test "store.rpm: Add simple signed rpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "rpm: Add simple signed rpm to existing repo" {
+@test "store.rpm: Add simple signed rpm to existing repo" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "rpm: Add rpm without distro" {
+@test "store.rpm: Add rpm without distro" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.equals "$status" "1"
     helpers.contains "$output" 'Unknown distro'
-    [[ "$status" -eq 1 ]]
 }
 
-@test "rpm: Add simple unsigned srpm" {
+@test "store.rpm: Add simple unsigned srpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
     helpers.is_file "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
 }
 
-@test "rpm: Add simple signed srpm" {
+@test "store.rpm: Add simple signed srpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
+    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
     helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
 }
 
-@test "rpm: Don't add srcrpm if conf says not to" {
+@test "store.rpm: Don't add srcrpm if conf says not to" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
@@ -105,24 +107,26 @@ PGP_ID=bedc9c4be614e4ba
 [store.RPMStore]
 with_srcrpms=False
 EOC
-    helpers.run \
-        repoman \
-            --config "$conf" \
-            "$repo" \
-                add "dir:$BATS_TEST_DIRNAME/$SOURCE_REPO1" \
+    helpers.run repoman \
+        -v \
+        --config "$conf" \
+        "$repo" \
+            add "dir:$BATS_TEST_DIRNAME/$SOURCE_REPO1" \
+    helpers.equals "$status" "0"
     ! find "$repo/$SIGNED_SRPM_EXPECTED_PATH" -iname '*.src.rpm'
 }
 
-@test "rpm: Generate metadata only once" {
+@test "store.rpm: Generate metadata only once" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    helpers.run repoman "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    helpers.equals "$status" "0"
     helpers.contains "$output" '^.*(Creating metadata.*)$'
     ! helpers.contains "$output" '^.*(Creating metadata.*){2}$'
 }
 
-@test "rpm: Add and sign one rpm" {
+@test "store.rpm: Add and sign one rpm" {
     local repo
     load utils
     if [[ "$(utils.distro)" == "Fedora 22" ]]; then
@@ -131,15 +135,17 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman \
+        -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
     helpers.run rpm -qpi "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
+    helpers.equals "$status" "0"
     helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
-@test "rpm: Add and sign one srpm" {
+@test "store.rpm: Add and sign one srpm" {
     local repo
     load utils
     if [[ "$(utils.distro)" == "Fedora 22" ]]; then
@@ -147,16 +153,19 @@ EOC
     fi
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman \
+    helpers.run repoman \
+        -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
+    helpers.equals "$status" "0"
     helpers.run rpm -qpi "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
+    helpers.equals "$status" "0"
     helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
-@test "rpm: Add and sign one srpm with src generation" {
+@test "store.rpm: Add and sign one srpm with src generation" {
     local repo
     load utils
     if [[ "$(utils.distro)" == "Fedora 22" ]]; then
@@ -165,6 +174,7 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman \
+        -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
@@ -178,11 +188,12 @@ EOC
     done
 }
 
-@test "rpm: Add one srpm with src generation without signatures" {
+@test "store.rpm: Add one srpm with src generation without signatures" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman \
+        -v \
         "$repo"  \
         --with-sources \
         add "$BATS_TEST_DIRNAME/$FULL_SRPM"
@@ -195,7 +206,7 @@ EOC
 }
 
 
-@test "rpm: Create relative symlinks" {
+@test "store.rpm: Create relative symlinks" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
@@ -207,6 +218,7 @@ extra_symlinks=
     three:four
 EOC
     repoman \
+        -v \
         --config "$conf" \
         "$repo" \
             add \
@@ -221,7 +233,7 @@ EOC
 }
 
 
-@test "rpm: Warn if symlink path exists or origin does not" {
+@test "store.rpm: Warn if symlink path exists or origin does not" {
     local repo \
         conf
     repo="$BATS_TMPDIR/myrepo"
@@ -232,6 +244,7 @@ EOC
 extra_symlinks=idontexist:imalink,rpm:imalink
 EOC
     helpers.run repoman \
+        -v \
         --config "$conf" \
         "$repo" \
             add \
@@ -250,7 +263,7 @@ EOC
 }
 
 
-@test "rpm: use custom rpm dir name" {
+@test "store.rpm: use custom rpm dir name" {
     local repo \
         conf
     repo="$BATS_TMPDIR/myrepo"
@@ -261,6 +274,7 @@ EOC
 rpm_dir=custom_name
 EOC
     helpers.run repoman \
+        -v \
         --config "$conf" \
         "$repo" \
             add \
@@ -270,7 +284,7 @@ EOC
 }
 
 
-@test "rpm: use no rpm subdirectoy" {
+@test "store.rpm: use no rpm subdirectoy" {
     local repo \
         conf
     repo="$BATS_TMPDIR/myrepo"
@@ -281,6 +295,7 @@ EOC
 rpm_dir=
 EOC
     helpers.run repoman \
+        -v \
         --config "$conf" \
         "$repo" \
             add \
@@ -290,19 +305,21 @@ EOC
 }
 
 
-@test "rpm: add package to existing repo" {
+@test "store.rpm: add package to existing repo" {
     local repo \
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$BATS_TMPDIR/myrepo"
-   helpers.run repoman \
+    helpers.run repoman \
+        -v \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.equals "$status" '0'
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
     helpers.run repoman \
+        -v \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2"
