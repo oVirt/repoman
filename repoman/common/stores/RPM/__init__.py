@@ -45,6 +45,7 @@ from .RPM import (
     RPMList,
     RPMName,
     RPM,
+    WrongDistroException,
 )
 from ...utils import (
     list_files,
@@ -78,6 +79,11 @@ class RPMStore(ArtifactStore):
       extra_symlinks
         Comma separated list of orig:symlink pairs to create links, the paths
 
+      on_wrong_distro
+        Action to execute when a package has an incorrect distro (it's release
+        string does not match the distro_reg regular expression). Possible
+        values are 'fail' or 'warn'. The default is 'fail'
+
       path_prefix
         Prefixes of this store inside the globl artifact repository, separated
         by commas
@@ -110,6 +116,7 @@ class RPMStore(ArtifactStore):
     DEFAULT_CONFIG = {
         'distro_reg': r'\.(fc|el)\d+(?=\w*)',
         'extra_symlinks': '',
+        'on_wrong_distro': 'fail',
         'path_prefix': 'rpm,src',
         'rpm_dir': 'rpm',
         'signing_key': '',
@@ -134,6 +141,7 @@ class RPMStore(ArtifactStore):
         self.distros = set()
         self.sign_key = config.get('signing_key')
         self.sign_passphrase = config.get('signing_passphrase')
+        self.on_wrong_distro = config.get('on_wrong_distro')
         # init first, add existing repo after
         super(RPMStore, self).__init__(config=config)
         if repo_path:
@@ -176,11 +184,17 @@ class RPMStore(ArtifactStore):
         :param hidelog: If set to True will not show the extra information
             (used when loading a repository to avoid verbose output)
         """
-        pkg = RPM(
-            pkg,
-            temp_dir=self.config.get('temp_dir'),
-            distro_reg=self.config.get('distro_reg')
-        )
+        try:
+            pkg = RPM(
+                pkg,
+                temp_dir=self.config.get('temp_dir'),
+                distro_reg=self.config.get('distro_reg')
+            )
+        except WrongDistroException:
+            if self.on_wrong_distro == 'fail':
+                raise
+            else:
+                return
         if self.rpms.add_pkg(pkg, onlyifnewer):
             if to_copy:
                 self.to_copy.append(pkg)

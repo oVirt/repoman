@@ -73,13 +73,26 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Add rpm without distro" {
+@test "store.rpm: Fail when adding rpm without distro" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "1"
     helpers.contains "$output" 'Unknown distro'
+}
+
+@test "store.rpm: Warn adding rpm without distro if option passed" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    helpers.run repoman \
+        -v "$repo" \
+        --option store.RPMStore.on_wrong_distro=warn \
+            add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.equals "$status" "0"
+    ! helpers.contains "$output" 'Unknown distro'
+    helpers.contains "$output" 'Malformed release string'
 }
 
 @test "store.rpm: Add simple unsigned srpm" {

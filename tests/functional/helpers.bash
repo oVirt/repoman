@@ -44,7 +44,7 @@ helpers.run() {
 
 helpers.equals() {
     local what="${1:?}"
-    local to_what="${1:?}"
+    local to_what="${2:?}"
     echo "$what == $to_what"
     [[ "$what" == "$to_what" ]]
     return $?
