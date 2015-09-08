@@ -69,8 +69,22 @@ class WrongDistroException(Exception):
 
 
 class RPM(Artifact):
-    def __init__(self, path, temp_dir='/tmp', distro_reg=r'\.(fc|el)\d+',
-                 to_all_distros=(r'ovirt-release\d*', r'ovirt-guest-tools')):
+    def __init__(
+        self,
+        path,
+        temp_dir='/tmp',
+        distro_reg=r'\.(fc|el)\d+',
+        to_all_distros=(
+            r'ovirt-release\d*',
+            r'ovirt-guest-tools',
+            r'py2exe*',
+            r'python-windows*',
+            r'pywin32*',
+            r'spice-qxl*',
+            r'vcredist-x86*',
+            r'nsis-simple-service-plugin*'
+        )
+    ):
         """
         :param path: Path or url to the rpm
         :param temp_dir: If url specified, will use that temporary dir to store
