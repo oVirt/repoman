@@ -226,6 +226,7 @@ def copy(what, where):
         if oerror.errno == 18:
             shutil.copy2(what, where)
         else:
+            logging.error('cannot copy %s on %s' % (what, where))
             raise
 
 
