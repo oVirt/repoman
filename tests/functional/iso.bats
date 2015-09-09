@@ -5,6 +5,7 @@ load helpers
 ISO_PATH="fixtures/dummy-project-1.2.3.iso"
 EXPECTED_ISO_PATH="iso/dummy-project/1.2.3/dummy-project-1.2.3.iso"
 ISO_BADPATH="fixtures/dummy-project-without-version.iso"
+ISO_BADPATH_WITH_NUMBERS="fixtures/123/dummy-project-without-version.iso"
 EXPECTED_ISO_MD5_PATH="${EXPECTED_ISO_PATH}.md5sum"
 EXPECTED_ISO_SIG_PATH="${EXPECTED_ISO_MD5_PATH}.sig"
 PGP_KEY=fixtures/my_key.asc
@@ -30,6 +31,7 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
+
 @test "store.iso: Add iso with wrong name" {
     local repo \
         created_dirs
@@ -45,6 +47,28 @@ PGP_ID=bedc9c4be614e4ba
     created_dirs=( "$repo"/* )
     [[ -z "$created_dirs" ]]
 }
+
+
+@test "store.iso: Add iso with wrong name from a path with numbers" {
+    local repo \
+        created_dirs
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    mkdir -p "$BATS_TEST_DIRNAME/${ISO_BADPATH_WITH_NUMBERS%/*}"
+    cp -a \
+        "$BATS_TEST_DIRNAME/$ISO_BADPATH" \
+        "$BATS_TEST_DIRNAME/$ISO_BADPATH_WITH_NUMBERS"
+    helpers.run \
+        repoman \
+            "$repo" \
+            add "$BATS_TEST_DIRNAME/$ISO_BADPATH_WITH_NUMBERS"
+    helpers.equals "$status" "1"
+    helpers.contains "$output" "No artifacts found"
+    shopt -s nullglob
+    created_dirs=( "$repo"/* )
+    [[ -z "$created_dirs" ]]
+}
+
 
 @test "store.iso: Add and sign iso" {
     local repo

@@ -34,7 +34,7 @@ from ..artifact import (
 logger = logging.getLogger(__name__)
 
 
-ISO_REGEX = r'(.*/)?(?P<name>[^\d]+).(?P<version>\d.*)\.iso'
+ISO_REGEX = r'(.*/)?(?P<name>[^\d/]+).(?P<version>\d[^/]*)\.iso'
 
 
 class WrongIsoError(Exception):
@@ -50,7 +50,7 @@ class Iso(Artifact):
         if not nv_match:
             raise WrongIsoError(
                 "Can't extract name and version from %s"
-                % self.path,
+                % path,
             )
         self._name = nv_match.groupdict().get('name')
         self._version = nv_match.groupdict().get('version')
