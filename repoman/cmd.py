@@ -7,6 +7,7 @@ different types of artifacts
 """
 import argparse
 import logging
+import sys
 from getpass import getpass
 
 from urllib3 import connectionpool
@@ -62,7 +63,11 @@ def parse_args():
         help='Temporary dir to use when downloading artifacts'
     )
     add_rpm.add_argument(
-        'artifact_source', nargs='+',
+        '--read-sources-from-stdin', action='store_true',
+        help='Read the sources from stdin instead of the arguments.',
+    )
+    add_rpm.add_argument(
+        'artifact_source', nargs='*',
         help=(
             'An artifact source to add, it can be one of: ' +
             ', '.join(', '.join(source.formats_list())
@@ -165,8 +170,12 @@ def main():
     logger.info('')
     if args.repoaction == 'add':
         logger.info('Adding artifacts to the repo %s', repo.path)
-        for art_src in args.artifact_source:
-            repo.add_source(art_src)
+        if args.read_sources_from_stdin:
+            sources = sys.stdin.readlines()
+        else:
+            sources = args.artifact_source
+        for art_src in sources:
+            repo.add_source(art_src.strip())
         logger.info('')
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')

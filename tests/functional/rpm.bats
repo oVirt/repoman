@@ -339,3 +339,23 @@ EOC
     helpers.equals "$status" '0'
     helpers.is_file "$repo/$UNSIGNED_RPM2_EXPECTED_PATH"
 }
+
+
+@test "store.rpm: add package to existing repo, passed through stdin" {
+    local repo \
+        conf
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    echo -e\
+        "$BATS_TEST_DIRNAME/$SIGNED_RPM" \
+        "\n" \
+        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2" \
+    | repoman \
+        -v \
+        "$repo" \
+            add \
+            --read-sources-from-stdin
+    helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$UNSIGNED_RPM2_EXPECTED_PATH"
+}
