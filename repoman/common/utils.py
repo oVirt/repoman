@@ -169,6 +169,7 @@ def download(path, dest_path, tries=3):
     """
     headers = requests.head(path)
     chunk_size = 4096
+    # length == 0 means that we don't know the size
     length = int(headers.headers.get('content-length', 0)) or 0
     logging.info('Downloading %s, length %s ...',
                  path,
@@ -212,9 +213,10 @@ def download(path, dest_path, tries=3):
     if length:
         if cur_percent < num_dots:
             sys.stdout.write('=')
-        sys.stdout.write(']')
-    sys.stdout.write('\n')
-    if not length:
+        sys.stdout.write(']\n')
+        sys.stdout.flush()
+    else:
+        sys.stdout.flush()
         logging.info('    Done')
 
 
