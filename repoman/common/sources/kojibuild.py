@@ -25,6 +25,7 @@ class KojiBuildSource(ArtifactSource):
     DEFAULT_CONFIG = {
         'koji_server': 'https://koji.fedoraproject.org/kojihub',
         'koji_topurl': 'https://kojipkgs.fedoraproject.org/',
+        'koji_skip_unavailable': 'true',
     }
     CONFIG_SECTION = 'KojiBuildSource'
 
@@ -79,7 +80,16 @@ class KojiBuildSource(ArtifactSource):
             else:
                 build_id = build.get('id')
             pathinfo = koji.PathInfo(topdir=topurl)
-            rpms = client.listRPMs(buildID=build_id)
+            try:
+                rpms = client.listRPMs(buildID=build_id)
+            except Exception as error:
+                logger.error(
+                    '        Failed to get build for %s:/n%s',
+                    build_id,
+                    error,
+                )
+                if not self.config.getboolean('koji_skip_unavailable'):
+                    raise
             if not rpms:
                 logger.warn('        No rpms for build %d', build_id)
             else:
