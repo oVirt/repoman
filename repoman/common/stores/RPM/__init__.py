@@ -82,7 +82,11 @@ class RPMStore(ArtifactStore):
       on_wrong_distro
         Action to execute when a package has an incorrect distro (it's release
         string does not match the distro_reg regular expression). Possible
-        values are 'fail' or 'warn'. The default is 'fail'
+        values are 'fail', 'copy_to_all' or anything else. The default is
+        'fail', if 'copy_to_all' specified it will copy the rpm to all the
+        distros (it needs to have any other distros in the dst repo, or other
+        rpms with a defined distro). If anything else specified, it will warn
+        and skip that rpm.
 
       path_prefix
         Prefixes of this store inside the globl artifact repository, separated
@@ -191,9 +195,23 @@ class RPMStore(ArtifactStore):
                 distro_reg=self.config.get('distro_reg')
             )
         except WrongDistroException:
-            if self.on_wrong_distro == 'fail':
+            if self.on_wrong_distro == 'copy_to_all':
+                pkg = RPM(
+                    pkg,
+                    temp_dir=self.config.get('temp_dir'),
+                    distro_reg=self.config.get('distro_reg'),
+                    to_all_distros=('.*',),
+                )
+            elif self.on_wrong_distro == 'fail':
                 raise
             else:
+                if self.on_wrong_distro != 'warn':
+                    logger.warn(
+                        'Wrong value for store.%s.on_wrong_distro (), '
+                        'assumming "warn"',
+                        self.on_wrong_distro,
+                        self.CONFIG_SECTION,
+                    )
                 return
         if self.rpms.add_pkg(pkg, onlyifnewer):
             if to_copy:

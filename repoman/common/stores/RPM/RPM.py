@@ -125,8 +125,11 @@ class RPM(Artifact):
         # will be calculated if needed
         self._md5 = None
         # Check if this package has to go to all distros
-        if any((self.name for nreg in to_all_distros if re.match(nreg,
-                                                                 self.name))):
+        if any((
+            self.name
+            for nreg in to_all_distros
+            if re.match(nreg, self.name)
+        )):
             self.distro = 'all'
         else:
             try:

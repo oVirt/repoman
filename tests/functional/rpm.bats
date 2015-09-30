@@ -6,9 +6,13 @@ UNSIGNED_RPM=fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM2=fixtures/unsigned_rpm-1.0-2.fc21.x86_64.rpm
 UNSIGNED_RPM2_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
+UNSIGNED_RPM3=fixtures/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+UNSIGNED_RPM3_EXPECTED_PATH=rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
 SIGNED_RPM=fixtures/signed_rpm-1.0-1.fc21.x86_64.rpm
 SIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
 NO_DISTRO_RPM=fixtures/unsigned_rpm-1.0-1.x86_64.rpm
+ALL_DISTRO_RPM_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-1.x86_64.rpm
+ALL_DISTRO_RPM2_EXPECTED_PATH=rpm/fc22/x86_64/unsigned_rpm-1.0-1.x86_64.rpm
 UNSIGNED_SRPM=fixtures/unsigned_rpm-1.0-1.fc21.src.rpm
 UNSIGNED_SRPM_EXPECTED_PATH=rpm/fc21/SRPMS/unsigned_rpm-1.0-1.fc21.src.rpm
 UNSIGNED_SRPM2=fixtures/unsigned_rpm-1.1-1.fc21.src.rpm
@@ -98,6 +102,66 @@ PGP_ID=bedc9c4be614e4ba
     helpers.equals "$status" "0"
     ! helpers.contains "$output" 'Unknown distro'
     helpers.contains "$output" 'Malformed release string'
+}
+
+@test "store.rpm: Add rpm to all the distros if option passed when dst repo has distros" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    repoman -v "$repo" \
+        add \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM" \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM3"
+    helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$UNSIGNED_RPM3_EXPECTED_PATH"
+    helpers.run repoman \
+        -v "$repo" \
+        --option store.RPMStore.on_wrong_distro=copy_to_all \
+        add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.equals "$status" "0"
+    tree "$repo"
+    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Malformed release string'
+    helpers.is_file "$repo/$ALL_DISTRO_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$ALL_DISTRO_RPM2_EXPECTED_PATH"
+}
+
+@test "store.rpm: Add rpm to all the distros if option passed when dst repo has no distros but added with another rpm with distros" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    repoman -v "$repo" add
+    helpers.run repoman \
+        -v "$repo" \
+        --option store.RPMStore.on_wrong_distro=copy_to_all \
+        add \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM" \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM3" \
+            "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.equals "$status" "0"
+    tree "$repo"
+    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Malformed release string'
+    helpers.is_file "$repo/$ALL_DISTRO_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$ALL_DISTRO_RPM2_EXPECTED_PATH"
+    helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$UNSIGNED_RPM3_EXPECTED_PATH"
+}
+
+@test "store.rpm: Fail if rpm should go to all distros, but no distros in the repo or no other rpms" {
+    local repo
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    helpers.run repoman \
+        -v "$repo" \
+        --option store.RPMStore.on_wrong_distro=copy_to_all \
+            add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.equals "$status" "1"
+    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Malformed release string'
+    helpers.contains \
+        "$output" \
+        'No distros found in the repo and no packages with any distros added.'
 }
 
 @test "store.rpm: Add simple unsigned srpm" {
