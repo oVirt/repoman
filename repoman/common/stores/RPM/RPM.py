@@ -214,14 +214,16 @@ class RPM(Artifact):
         logging.info("SIGNING: %s", self.path)
         # TODO: Did not find a nicer documented way to do this, might dig into
         # the rpmsign code itself to find out when having some time
+        rpmsign_args = [
+            '--resign',
+            '-D', '_signature gpg',
+            '-D', '_gpg_name %s' % keyuid,
+            self.path,
+        ]
+        logging.debug('\nrpmsign /\n' + ' /\n\t'.join(rpmsign_args))
         child = pexpect.spawn(
             'rpmsign',
-            [
-                '--resign',
-                '-D', '_signature gpg',
-                '-D', '_gpg_name %s' % keyuid,
-                self.path,
-            ],
+            rpmsign_args,
             timeout=600,  # rpmsign may take a lot of time...
         )
         child.expect('Enter pass phrase: ')

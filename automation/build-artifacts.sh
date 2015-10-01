@@ -107,10 +107,11 @@ echo "######################################################################"
 echo "#  Installation tests"
 echo "#"
 
+shopt -s extglob
 if which yum-deprecated &>/dev/null; then
-    yum-deprecated install exported-artifacts/*rpm
+    yum-deprecated install exported-artifacts/!(*src).rpm
 else
-    yum install exported-artifacts/*rpm
+    yum install exported-artifacts/!(*src).rpm
 fi
 repoman -h
 

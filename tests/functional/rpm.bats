@@ -51,7 +51,8 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Add simple unsigned rpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
     helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
 }
@@ -59,7 +60,8 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Add simple signed rpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
@@ -67,7 +69,8 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Add simple signed rpm to existing repo" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
@@ -76,20 +79,22 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Fail when adding rpm without distro" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "1"
     helpers.contains "$output" 'Unknown distro'
 }
 
-@test "store.rpm: Warn adding rpm without distro if option passed" {
+@test "store.rpm: Warn when adding rpm without distro if option passed" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     helpers.run repoman \
         -v "$repo" \
         --option store.RPMStore.on_wrong_distro=warn \
-            add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+        add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "0"
     ! helpers.contains "$output" 'Unknown distro'
     helpers.contains "$output" 'Malformed release string'
@@ -98,7 +103,8 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Add simple unsigned srpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
     helpers.is_file "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
 }
@@ -106,7 +112,8 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.rpm: Add simple signed srpm" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
     helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
 }
@@ -115,7 +122,8 @@ PGP_ID=bedc9c4be614e4ba
     local repo
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     cat > "$conf" <<EOC
 [store.RPMStore]
 with_srcrpms=False
@@ -146,7 +154,8 @@ EOC
         skip
     fi
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman \
         -v \
         "$repo"  \
@@ -165,7 +174,8 @@ EOC
         skip
     fi
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     helpers.run repoman \
         -v \
         "$repo"  \
@@ -185,7 +195,8 @@ EOC
         skip
     fi
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman \
         -v \
         "$repo"  \
@@ -204,7 +215,8 @@ EOC
 @test "store.rpm: Add one srpm with src generation without signatures" {
     local repo
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     repoman \
         -v \
         "$repo"  \
@@ -223,7 +235,8 @@ EOC
     local repo
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     cat > "$conf" <<EOC
 [store.RPMStore]
 extra_symlinks=
@@ -251,7 +264,8 @@ EOC
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     cat > "$conf" <<EOC
 [store.RPMStore]
 extra_symlinks=idontexist:imalink,rpm:imalink
@@ -281,7 +295,8 @@ EOC
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     cat > "$conf" <<EOC
 [store.RPMStore]
 rpm_dir=custom_name
@@ -302,7 +317,8 @@ EOC
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     cat > "$conf" <<EOC
 [store.RPMStore]
 rpm_dir=
@@ -323,7 +339,8 @@ EOC
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     helpers.run repoman \
         -v \
         "$repo" \
@@ -346,7 +363,8 @@ EOC
         conf
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
-    rm -rf "$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     echo -e\
         "$BATS_TEST_DIRNAME/$SIGNED_RPM" \
         "\n" \
