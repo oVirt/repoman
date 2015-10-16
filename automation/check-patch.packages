@@ -12,5 +12,6 @@ python-tox
 redhat-lsb-core
 rpm-python
 rpm-sign
-yum
 tree
+yum
+yum-utils

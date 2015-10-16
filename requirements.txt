@@ -4,7 +4,9 @@ requests
 urllib3
 pbr>=0.8.2,<1.0
 six
-pexpect
+# pexpect >=4.0 has dropped support for python 2.6, so for the tests at least
+# we need a lower version
+pexpect<4.0
 # Needed but not in pip, install rpm-python
 # will use system installed lib for the functional tests
 #rpm-python

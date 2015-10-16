@@ -84,6 +84,9 @@ done
 # generate tarball
 python setup.py sdist
 
+# install build-requires
+yum-builddep dist/repoman.spec
+
 # create rpms
 rpmbuild \
     -ba \
