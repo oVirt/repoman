@@ -78,6 +78,7 @@ def find_recursive(base_path, fmatch):
     Walks a directory recursively and returns the list of files for which
     fmatch(filename) returns True
     """
+    logger.debug('Recursively looking into %s', base_path)
     matched_files = []
     for root, _, files in os.walk(base_path):
         matched_files.extend([
@@ -85,6 +86,7 @@ def find_recursive(base_path, fmatch):
             for fname in files
             if fmatch(fname)
         ])
+    logger.debug('Got matched artifacts: %s', matched_files)
     return matched_files
 
 

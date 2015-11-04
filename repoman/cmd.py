@@ -110,13 +110,27 @@ def main():
     args = parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=(
+                '%(asctime)s::%(levelname)s::'
+                '%(name)s.%(funcName)s:%(lineno)d::'
+                '%(message)s'
+            ),
+        )
         logging.root.level = logging.DEBUG
         #  we want connectionpool debug logs
         connectionpool.log.setLevel(logging.DEBUG)
         logging.debug('Enabled verbose mode')
     else:
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            level=logging.INFO,
+            format=(
+                '%(asctime)s::%(levelname)s::'
+                '%(name)s::'
+                '%(message)s'
+            ),
+        )
         logger.root.level = logging.INFO
         #  we don't want connectionpool info logs
         connectionpool.log.setLevel(logging.WARN)

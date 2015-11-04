@@ -94,4 +94,9 @@ class Parser(object):
             msg = 'No artifacts found for source %s' % source_str
             logger.error(msg)
             raise Exception(msg)
+        logging.debug(
+            'From source string %s got: %s',
+            full_source_str,
+            art_list
+        )
         return art_list
