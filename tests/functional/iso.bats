@@ -17,7 +17,7 @@ PGP_ID=bedc9c4be614e4ba
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
+    repoman --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
     helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
@@ -26,8 +26,8 @@ PGP_ID=bedc9c4be614e4ba
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    repoman "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
+    repoman --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
+    repoman --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
     helpers.is_file "$repo/$EXPECTED_ISO_PATH"
 }
 
@@ -38,7 +38,7 @@ PGP_ID=bedc9c4be614e4ba
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run \
-        repoman \
+        repoman --verbose \
             "$repo" \
             add "$BATS_TEST_DIRNAME/$ISO_BADPATH"
     helpers.equals "$status" "1"
@@ -59,7 +59,7 @@ PGP_ID=bedc9c4be614e4ba
         "$BATS_TEST_DIRNAME/$ISO_BADPATH" \
         "$BATS_TEST_DIRNAME/$ISO_BADPATH_WITH_NUMBERS"
     helpers.run \
-        repoman \
+        repoman --verbose \
             "$repo" \
             add "$BATS_TEST_DIRNAME/$ISO_BADPATH_WITH_NUMBERS"
     helpers.equals "$status" "1"
@@ -78,7 +78,7 @@ PGP_ID=bedc9c4be614e4ba
     fi
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman "$repo" \
+    repoman --verbose "$repo" \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
         add "$BATS_TEST_DIRNAME/$ISO_PATH"

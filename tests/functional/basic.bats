@@ -20,7 +20,7 @@ load helpers
     local repo
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman \
+    repoman --verbose \
         --option store.RPMStore.rpm_dir=custom_name \
         "$repo" \
         add "$BATS_TEST_DIRNAME/$BASE_RPM"
@@ -32,7 +32,7 @@ load helpers
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run \
-        repoman \
+        repoman --verbose \
             --config idontexist \
             "$repo" \
         add "$BATS_TEST_DIRNAME/$BASE_RPM"
@@ -45,7 +45,7 @@ load helpers
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     helpers.run \
-        repoman \
+        repoman --verbose \
             "$repo" \
             add "$BATS_TEST_DIRNAME/$BASE_RPM.idontexist"
     helpers.equals "$status" "1"
