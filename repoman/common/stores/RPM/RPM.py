@@ -76,6 +76,7 @@ class RPM(Artifact):
         distro_reg=r'\.(fc|el)\d+',
         to_all_distros=(
             r'ovirt-release\d*',
+            r'ovirt-guest-agent-windows',
             r'ovirt-guest-tools',
             r'py2exe*',
             r'python-windows*',
