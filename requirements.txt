@@ -14,3 +14,4 @@ pexpect<4.0
 #koji
 # koji deps
 pyOpenSSL
+#rpm-sign

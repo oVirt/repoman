@@ -17,6 +17,11 @@ Requires: python-pexpect
 Requires: pexpect
 %endif
 '
+EXTRA_SPECS[rpm-sign]='
+%if 0%{?fedora} || 0%{?rhel} >= 7
+Requires: rpm-sign
+%endif
+'
 
 is_in() {
     local what="${1?}"
