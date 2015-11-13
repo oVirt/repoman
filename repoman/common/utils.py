@@ -6,6 +6,7 @@ import logging
 import subprocess
 import glob
 import pprint
+from functools import partial
 
 import requests
 import gnupg
@@ -19,20 +20,61 @@ class NotSamePackage(Exception):
     pass
 
 
-def gpg_get_keyuid(key_path):
+def get_gpg(homedir=os.path.expanduser('~/.gnupg'), use_agent=False):
     try:
         # older gnupg
-        gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
+        gpg = gnupg.GPG(gnupghome=homedir, use_agent=use_agent)
     except TypeError:
-        gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
+        gpg = gnupg.GPG(homedir=homedir, use_agent=use_agent)
+    return gpg
+
+
+def gpg_load_key(key_path, gpg=None):
+    logger.debug('Loading key %s', key_path)
+    gpg = gpg if gpg is not None else get_gpg()
     with open(key_path) as key_fd:
         skey = gpg.import_keys(key_fd.read())
         fprint = skey.results[0]['fingerprint']
+    logger.debug('Loaded key %s with fingerprint %s', key_path, fprint)
+    return fprint
+
+
+def gpg_get_keyuid(key_path, gpg=None):
+    logger.debug('Looking the uid for %s', key_path)
+    gpg = gpg if gpg is not None else get_gpg()
+    fprint = gpg_load_key(key_path=key_path, gpg=gpg)
     keyuid = None
     for key in gpg.list_keys(True):
         if key['fingerprint'] == fprint:
             keyuid = key['uids'][0]
+    if not keyuid:
+        for key in gpg.list_keys():
+            if key['fingerprint'] == fprint:
+                keyuid = key['uids'][0]
+    if not keyuid:
+        raise Exception('Failed to get uid for key %s' % key_path)
+    logger.debug('Got uid %s for %s', keyuid, key_path)
     return keyuid
+
+
+def gpg_unlock(key_path, use_agent=True, passphrase=None, gpg=None):
+    logger.debug('Unlocking gpg key %s' % key_path)
+    gpg = gpg if gpg is not None else get_gpg(
+        homedir=None,
+        use_agent=use_agent,
+    )
+    key_uid = gpg_get_keyuid(key_path=key_path, gpg=gpg)
+    sign = partial(
+        gpg.sign,
+        message='Dummy_message',
+        keyid=key_uid,
+    )
+    if passphrase:
+        sign(passphrase=passphrase)
+    else:
+        sign()
+    logger.debug('Unlocked gpg key %s' % key_path)
+    return gpg
 
 
 def response2str(response):

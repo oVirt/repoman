@@ -120,11 +120,11 @@ class Artifact(object):
             extension=self.extension,
         )
 
-    def sign(self, keyuid, passwd):
+    def sign(self, key_path, passwd):
         """
         Defines how to sign this artifact, by default with detached signature
         """
-        sign_detached(self.path, key=keyuid, passphrase=passwd)
+        sign_detached(self.path, key=key_path, passphrase=passwd)
 
     def __str__(self):
         """

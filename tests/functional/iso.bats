@@ -73,9 +73,6 @@ PGP_ID=bedc9c4be614e4ba
 @test "store.iso: Add and sign iso" {
     local repo
     load utils
-    if [[ "$(utils.distro)" == "Fedora 22" ]]; then
-        skip
-    fi
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     repoman --verbose "$repo" \

@@ -47,14 +47,14 @@ import os
 import logging
 import re
 
-
 import rpm
 import pexpect
-
 
 from ...utils import (
     download,
     cmpfullver,
+    gpg_unlock,
+    gpg_get_keyuid,
 )
 from ...artifact import (
     Artifact,
@@ -214,14 +214,16 @@ class RPM(Artifact):
             arch_name,
         )
 
-    def sign(self, keyuid, passwd):
+    def sign(self, key_path, passwd):
         logging.info("SIGNING: %s", self.path)
-        # TODO: Did not find a nicer documented way to do this, might dig into
-        # the rpmsign code itself to find out when having some time
+        gpg = gpg_unlock(key_path, passphrase=passwd)
+        keyuid = gpg_get_keyuid(key_path, gpg=gpg)
         rpmsign_args = [
             '--resign',
             '-D', '_signature gpg',
             '-D', '_gpg_name %s' % keyuid,
+            # TODO: make this work with gpg2 too, fc>21 throws invalid ioctl
+            '-D', '__gpg /usr/bin/gpg',
             self.path,
         ]
         logging.debug('\nrpmsign /\n' + ' /\n\t'.join(rpmsign_args))
@@ -230,18 +232,44 @@ class RPM(Artifact):
             rpmsign_args,
             timeout=600,  # rpmsign may take a lot of time...
         )
-        child.expect('Enter pass phrase: ')
-        child.sendline(passwd)
-        child.expect(pexpect.EOF)
+        try:
+            child.expect(
+                ['pass phrase: ', 'passphrase: ', 'Passphrase: '],
+                timeout=5,
+            )
+        except:
+            logging.error('Failed to sign')
+            logging.error(child)
+            raise
+        # For some reason, on fedora>21 rpmsign needs some tries until it
+        # properly signs
+        done = False
+        tries = 1
+        while not done:
+            child.sendline(passwd)
+            logging.debug('Sent pass to rpmsign, try number %d', tries)
+            try:
+                child.expect(pexpect.EOF, timeout=0.1)
+                done = True
+            except pexpect.TIMEOUT:
+                tries += 1
+                if tries >= 21:
+                    logging.error('Failed to sign')
+                    logging.error(child)
+                    raise
         child.close()
         if child.exitstatus != 0:
+            logging.error('Failed to sign')
+            logging.error(child)
             raise Exception("Failed to sign package.")
         self.__init__(self.path)
         if not self.signature:
+            logging.error('Failed to sign')
             raise Exception(
                 "Failed to sign rpm %s with key '%s'"
                 % (self.path, keyuid)
             )
+        del(gpg)
 
     def __str__(self):
         """

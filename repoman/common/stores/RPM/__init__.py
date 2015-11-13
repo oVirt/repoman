@@ -416,47 +416,12 @@ class RPMStore(ArtifactStore):
         """
         logger.info('')
         logger.info('Signing packages')
-        try:
-            # older gnupg versions
-            gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
-        except TypeError:
-            gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
-
-        key = self.sign_key
-        passphrase = self.sign_passphrase
-        try:
-            with open(key) as key_fd:
-                skey = gpg.import_keys(key_fd.read())
-        except IOError:
-            logger.error('Unable to find signing key')
-            raise
-        fprint = skey.results[0]['fingerprint']
-        keyuid = None
-        for key in gpg.list_keys(True):
-            if key['fingerprint'] == fprint:
-                keyuid = key['uids'][0]
-                logging.debug('Found key %s', key)
-            else:
-                logging.debug('Skipping key %s', key)
-        for key in gpg.list_keys():
-            if key['fingerprint'] == fprint:
-                keyuid = key['uids'][0]
-                logging.debug('Found key %s', key)
-            else:
-                logging.debug('Skipping key %s', key)
-        if not keyuid:
-            raise RuntimeError(
-                'Failed to load the gpg key %s, got loaded keys %s'
-                % (skey.results[0], gpg.list_keys(True))
-            )
-
         for pkg in self.get_rpms():
             logger.info('Got package %s', pkg)
         for pkg in self.get_rpms(
                 fmatch=lambda pkg: not pkg.signature
         ):
-            pkg.sign(keyuid, passphrase)
-            logger.info('Got unsigned package %s', pkg)
+            pkg.sign(key_path=self.sign_key, passwd=self.sign_passphrase)
         logger.info("Done signing")
 
     def create_symlinks(self):
