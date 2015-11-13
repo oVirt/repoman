@@ -467,3 +467,32 @@ EOC
     echo "$output"
     helpers.equals "$status" 0
 }
+
+
+@test "store.rpm: Add and sign multiple rpms (same rpm with multiple distros and other rpms)" {
+    local repo
+    local rpm
+    load utils
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman \
+        -v \
+        "$repo"  \
+        --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
+        --passphrase "$PGP_PASS" \
+        add \
+        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM" \
+        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2" \
+        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM3"
+    for rpm in \
+        "$UNSIGNED_RPM_EXPECTED_PATH" \
+        "$UNSIGNED_RPM2_EXPECTED_PATH" \
+        "$UNSIGNED_RPM3_EXPECTED_PATH";
+    do
+        helpers.run rpm -qpi "$repo/$rpm"
+        helpers.equals "$status" "0"
+        helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
+    done
+}
+
