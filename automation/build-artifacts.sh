@@ -57,10 +57,11 @@ shopt -s nullglob
 
 # cleanup
 rm -Rf \
-    exported-artifacts \
+    exported-artifacts/*rpm \
+    exported-artifacts/*tar.gz \
     dist \
     build
-mkdir exported-artifacts
+[[ -d exported-artifacts ]] || mkdir exported-artifacts
 
 # Custom hacks to get the correct spec file
 # to add the dist, and the requirements

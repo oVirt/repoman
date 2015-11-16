@@ -1,7 +1,11 @@
 #!/usr/bin/env bats
 
 load helpers
+load common_vars
+load utils
 
+
+SUITE_NAME=stores.rpm
 UNSIGNED_RPM=fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM_EXPECTED_PATH=rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
 UNSIGNED_RPM2=fixtures/unsigned_rpm-1.0-2.fc21.x86_64.rpm
@@ -52,50 +56,55 @@ PGP_PASS=123456
 PGP_ID=bedc9c4be614e4ba
 
 
-@test "store.rpm: Add simple unsigned rpm" {
+@test "stores.rpm: Add simple unsigned rpm" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
     helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Add simple signed rpm" {
+@test "stores.rpm: Add simple signed rpm" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Add simple signed rpm to existing repo" {
+@test "stores.rpm: Add simple signed rpm to existing repo" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Fail when adding rpm without distro" {
+@test "stores.rpm: Fail when adding rpm without distro" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
+    helpers.run repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "1"
     helpers.contains "$output" 'Unknown distro'
 }
 
-@test "store.rpm: Warn when adding rpm without distro if option passed" {
+@test "stores.rpm: Warn when adding rpm without distro if option passed" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v "$repo" \
         --option store.RPMStore.on_wrong_distro=warn \
         add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
@@ -104,17 +113,18 @@ PGP_ID=bedc9c4be614e4ba
     helpers.contains "$output" 'Malformed release string'
 }
 
-@test "store.rpm: Add rpm to all the distros if option passed when dst repo has distros" {
+@test "stores.rpm: Add rpm to all the distros if option passed when dst repo has distros" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
-    repoman -v "$repo" \
+    repoman_coverage -v "$repo" \
         add \
             "$BATS_TEST_DIRNAME/$UNSIGNED_RPM" \
             "$BATS_TEST_DIRNAME/$UNSIGNED_RPM3"
     helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
     helpers.is_file "$repo/$UNSIGNED_RPM3_EXPECTED_PATH"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v "$repo" \
         --option store.RPMStore.on_wrong_distro=copy_to_all \
         add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
@@ -126,12 +136,13 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$ALL_DISTRO_RPM2_EXPECTED_PATH"
 }
 
-@test "store.rpm: Add rpm to all the distros if option passed when dst repo has no distros but added with another rpm with distros" {
+@test "stores.rpm: Add rpm to all the distros if option passed when dst repo has no distros but added with another rpm with distros" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
-    repoman -v "$repo" add
-    helpers.run repoman \
+    repoman_coverage -v "$repo" add
+    helpers.run repoman_coverage \
         -v "$repo" \
         --option store.RPMStore.on_wrong_distro=copy_to_all \
         add \
@@ -148,11 +159,12 @@ PGP_ID=bedc9c4be614e4ba
     helpers.is_file "$repo/$UNSIGNED_RPM3_EXPECTED_PATH"
 }
 
-@test "store.rpm: Fail if rpm should go to all distros, but no distros in the repo or no other rpms" {
+@test "stores.rpm: Fail if rpm should go to all distros, but no distros in the repo or no other rpms" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v "$repo" \
         --option store.RPMStore.on_wrong_distro=copy_to_all \
             add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
@@ -164,26 +176,29 @@ PGP_ID=bedc9c4be614e4ba
         'No distros found in the repo and no packages with any distros added.'
 }
 
-@test "store.rpm: Add simple unsigned srpm" {
+@test "stores.rpm: Add simple unsigned srpm" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$UNSIGNED_SRPM"
     helpers.is_file "$repo/$UNSIGNED_SRPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Add simple signed srpm" {
+@test "stores.rpm: Add simple signed srpm" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
+    repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_SRPM"
     helpers.is_file "$repo/$SIGNED_SRPM_EXPECTED_PATH"
 }
 
-@test "store.rpm: Don't add srcrpm if conf says not to" {
+@test "stores.rpm: Don't add srcrpm if conf says not to" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
@@ -192,7 +207,7 @@ PGP_ID=bedc9c4be614e4ba
 [store.RPMStore]
 with_srcrpms=False
 EOC
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         --config "$conf" \
         "$repo" \
@@ -201,23 +216,24 @@ EOC
     ! find "$repo/$SIGNED_SRPM_EXPECTED_PATH" -iname '*.src.rpm'
 }
 
-@test "store.rpm: Generate metadata only once" {
+@test "stores.rpm: Generate metadata only once" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    helpers.run repoman -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
+    helpers.run repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.equals "$status" "0"
     helpers.contains "$output" '^.*(Creating metadata.*)$'
     ! helpers.contains "$output" '^.*(Creating metadata.*){2}$'
 }
 
-@test "store.rpm: Add and sign one rpm" {
+@test "stores.rpm: Add and sign one rpm" {
     local repo
-    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman \
+    repoman_coverage \
         -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
@@ -228,13 +244,13 @@ EOC
     helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
-@test "store.rpm: Add and sign one srpm" {
+@test "stores.rpm: Add and sign one srpm" {
     local repo
-    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
@@ -246,13 +262,13 @@ EOC
     helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
 }
 
-@test "store.rpm: Add and sign one srpm with src generation" {
+@test "stores.rpm: Add and sign one srpm with src generation" {
     local repo
-    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman \
+    repoman_coverage \
         -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
@@ -267,12 +283,13 @@ EOC
     done
 }
 
-@test "store.rpm: Add one srpm with src generation without signatures" {
+@test "stores.rpm: Add one srpm with src generation without signatures" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    repoman \
+    repoman_coverage \
         -v \
         "$repo"  \
         --with-sources \
@@ -286,8 +303,9 @@ EOC
 }
 
 
-@test "store.rpm: Create relative symlinks" {
+@test "stores.rpm: Create relative symlinks" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
@@ -298,7 +316,7 @@ extra_symlinks=
     one:two,
     three:four
 EOC
-    repoman \
+    repoman_coverage \
         -v \
         --config "$conf" \
         "$repo" \
@@ -314,9 +332,10 @@ EOC
 }
 
 
-@test "store.rpm: Warn if symlink path exists or origin does not" {
+@test "stores.rpm: Warn if symlink path exists or origin does not" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
@@ -325,7 +344,7 @@ EOC
 [store.RPMStore]
 extra_symlinks=idontexist:imalink,rpm:imalink
 EOC
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         --config "$conf" \
         "$repo" \
@@ -345,9 +364,10 @@ EOC
 }
 
 
-@test "store.rpm: use custom rpm dir name" {
+@test "stores.rpm: use custom rpm dir name" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
@@ -356,7 +376,7 @@ EOC
 [store.RPMStore]
 rpm_dir=custom_name
 EOC
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         --config "$conf" \
         "$repo" \
@@ -367,9 +387,10 @@ EOC
 }
 
 
-@test "store.rpm: use no rpm subdirectoy" {
+@test "stores.rpm: use no rpm subdirectoy" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
@@ -378,7 +399,7 @@ EOC
 [store.RPMStore]
 rpm_dir=
 EOC
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         --config "$conf" \
         "$repo" \
@@ -389,21 +410,22 @@ EOC
 }
 
 
-@test "store.rpm: add package to existing repo" {
+@test "stores.rpm: add package to existing repo" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo" \
             add \
             "$BATS_TEST_DIRNAME/$SIGNED_RPM"
     helpers.equals "$status" '0'
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo" \
             add \
@@ -413,22 +435,41 @@ EOC
 }
 
 
-@test "store.rpm: add package to existing repo, passed through stdin" {
+@test "stores.rpm: add package to existing repo, passed through stdin" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    helpers.run repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/$UNSIGNED_RPM"
+    helpers.equals "$status" '0'
     echo -e\
         "$BATS_TEST_DIRNAME/$SIGNED_RPM" \
         "\n" \
         "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2" \
-    | repoman \
+    | repoman_coverage \
         -v \
         "$repo" \
             add \
             --read-sources-from-stdin
     helpers.is_file "$repo/$SIGNED_RPM_EXPECTED_PATH"
+    helpers.is_file "$repo/$UNSIGNED_RPM_EXPECTED_PATH"
     helpers.is_file "$repo/$UNSIGNED_RPM2_EXPECTED_PATH"
+}
+
+
+@test "stores.rpm: gather coverage data" {
+    helpers.run utils.gather_coverage \
+    "$SUITE_NAME" \
+    "$BATS_TEST_DIRNAME" \
+    "$OUT_DIR" \
+    "stores/RPM/*"
+    echo "$output"
+    helpers.equals "$status" 0
 }

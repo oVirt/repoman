@@ -1,8 +1,11 @@
 #!/usr/bin/env bats
 
 load helpers
+load common_vars
+load utils
 
 
+SUITE_NAME=filters.latest
 LATEST_REPO1="$BATS_TEST_DIRNAME/fixtures/latest_repo1"
 LATEST_REPO2="$BATS_TEST_DIRNAME/fixtures/latest_repo2"
 LATEST_RPM_EXPECTED_PATHS=(
@@ -34,12 +37,13 @@ LATEST_3_UNEXPECTED_PATHS=(
 )
 
 
-@test "filter.latest: Simple latest filter" {
+@test "filters.latest: Simple latest filter" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     tree "$LATEST_REPO1"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo" \
             add "dir:$LATEST_REPO1:latest"
@@ -54,12 +58,13 @@ LATEST_3_UNEXPECTED_PATHS=(
 }
 
 
-@test "filter.latest: latest=2 filter" {
+@test "filters.latest: latest=2 filter" {
     local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
     tree "$LATEST_REPO1"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo" \
             add "dir:$LATEST_REPO1:latest=2"
@@ -74,14 +79,15 @@ LATEST_3_UNEXPECTED_PATHS=(
 }
 
 
-@test "filter.latest: Make sure that it ignores src.rpms when calculating the latest, but pulls the src.rpm of the selected latest rpm" {
+@test "filters.latest: Make sure that it ignores src.rpms when calculating the latest, but pulls the src.rpm of the selected latest rpm" {
     local repo \
         conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     conf="$BATS_TMPDIR/conf"
     rm -rf "$BATS_TMPDIR/myrepo"
     tree "$LATEST_REPO2"
-    helpers.run repoman \
+    helpers.run repoman_coverage \
         -v \
         "$repo" \
             add \
@@ -94,4 +100,14 @@ LATEST_3_UNEXPECTED_PATHS=(
     for unexpected in "${LATEST_3_UNEXPECTED_PATHS[@]}"; do
         helpers.not_exists "$repo/$unexpected"
     done
+}
+
+@test "filters.latest: gather coverage data" {
+    helpers.run utils.gather_coverage \
+    "$SUITE_NAME" \
+    "$BATS_TEST_DIRNAME" \
+    "$OUT_DIR" \
+    "filters/latest.py"
+    echo "$output"
+    helpers.equals "$status" 0
 }
