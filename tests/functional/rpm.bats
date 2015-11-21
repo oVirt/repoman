@@ -458,6 +458,127 @@ EOC
 }
 
 
+
+@test "stores.rpm: Remove all but the latest from existing repo" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$num_rpms; i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        remove-old --keep 1
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
+        helpers.isnt_file "$repo/$unexpected_path"
+    done
+}
+
+
+@test "stores.rpm: Remove all but the latest 2 from existing repo" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$num_rpms; i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        remove-old --keep 2
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST_TWO[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST_TWO[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST_TWO[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST_TWO[$i]}"
+        helpers.isnt_file "$repo/$unexpected_path"
+    done
+}
+
+
+@test "stores.rpm: When adding, leave only the latest" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$(($num_rpms - 1)); i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        add \
+            --keep-latest 1 \
+            "$BATS_TEST_DIRNAME/${ALL_RPMS[@]: -1}"
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
+        helpers.isnt_file "$repo/$unexpected_path"
+    done
+}
+
+
+@test "stores.rpm: When adding, leave only the latest 2" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$(($num_rpms - 1)); i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        add \
+            --keep-latest 2 \
+            "$BATS_TEST_DIRNAME/${ALL_RPMS[@]: -1}"
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST_TWO[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST_TWO[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST_TWO[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST_TWO[$i]}"
+        helpers.isnt_file "$repo/$unexpected_path"
+    done
+}
+
+
 @test "stores.rpm: gather coverage data" {
     helpers.run utils.gather_coverage \
     "$SUITE_NAME" \
@@ -476,23 +597,19 @@ EOC
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$repo"
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    rpms=()
+    for rpm in "${UNSIGNED_RPMS[@]}"; do
+        rpms+=("$BATS_TEST_DIRNAME/$rpm")
+    done
     repoman \
         -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
-        add \
-        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM" \
-        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM2" \
-        "$BATS_TEST_DIRNAME/$UNSIGNED_RPM3"
-    for rpm in \
-        "$UNSIGNED_RPM_EXPECTED_PATH" \
-        "$UNSIGNED_RPM2_EXPECTED_PATH" \
-        "$UNSIGNED_RPM3_EXPECTED_PATH";
-    do
+        add "${rpms[@]}"
+    for rpm in "${UNSIGNED_RPM_EXPECTED_PATHS[@]}"; do
         helpers.run rpm -qpi "$repo/$rpm"
         helpers.equals "$status" "0"
         helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
     done
 }
-

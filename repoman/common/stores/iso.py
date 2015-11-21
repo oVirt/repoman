@@ -89,7 +89,7 @@ class IsoStore(ArtifactStore):
     Configuration options:
 
       temp_dir
-        Temporary dir to store any transient downloads (like rpms from
+        Temporary dir to store any transient downloads (like isos from
         urls). The caller should make sure it exists and clean it up if needed.
 
       path_prefix
@@ -97,7 +97,7 @@ class IsoStore(ArtifactStore):
         by commas
 
       signing_key
-        Path to the gpg keey to sign the rpms with, will not sign them if not
+        Path to the gpg keey to sign the isos with, will not sign them if not
         set
 
       signing_passphrase
@@ -117,8 +117,12 @@ class IsoStore(ArtifactStore):
         :param path: Path to the repository directory, if passed it will
             automatically add all the isos under it to the repo if any.
         """
+        ArtifactStore.__init__(
+            self,
+            config=config,
+            artifacts=ArtifactList('isos'),
+        )
         self.name = self.__class__.__name__
-        self.isos = ArtifactList('isos')
         self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path or ('Non persisten %s' % self.name)
         self.to_copy = []
@@ -126,7 +130,6 @@ class IsoStore(ArtifactStore):
         self.sign_passphrase = config.get('signing_passphrase')
         if self.sign_key and self.sign_passphrase == 'ask':
             self.sign_passphrase = getpass('Key passphrase: ')
-        super(IsoStore, self).__init__(config=config)
         if repo_path:
             logger.info('Loading repo %s', repo_path)
             for iso in list_files(repo_path, '.iso'):
@@ -149,7 +152,7 @@ class IsoStore(ArtifactStore):
 
     def add_iso(self, iso, onlyifnewer=False, to_copy=True, hidelog=False):
         """
-        Generic functon to add an rpm package to the repo.
+        Generic functon to add an iso package to the repo.
 
         :param iso: path or url to the iso file to add
         :param onlyifnewer: If set to True, will only add the package if it's
@@ -165,7 +168,7 @@ class IsoStore(ArtifactStore):
             iso,
             temp_dir=self.config.get('temp_dir'),
         )
-        if self.isos.add_pkg(iso, onlyifnewer):
+        if self.artifacts.add_pkg(iso, onlyifnewer):
             if to_copy:
                 self.to_copy.append(iso)
             if not hidelog:
@@ -182,7 +185,7 @@ class IsoStore(ArtifactStore):
         """
         Copy all the extra isos added to the repository and save it's state.
 
-        :param onlylatest: Only copy the latest version of the added rpms.
+        :param onlylatest: Only copy the latest version of the added isos.
         """
         logger.info('Saving new added isos into %s', self.path)
         for iso in self.to_copy:
@@ -207,7 +210,7 @@ class IsoStore(ArtifactStore):
         Check if the given iso is the latest version in the repo
         :pram iso: ISO instance of the package to compare
         """
-        verlist = self.isos.get(iso.full_name, {})
+        verlist = self.artifacts.get(iso.full_name, {})
         if not verlist or iso.version in verlist.get_latest():
             return True
         return False
@@ -219,8 +222,8 @@ class IsoStore(ArtifactStore):
         :param noop: If set, will only log what will be done, not actually
             doing anything.
         """
-        new_isos = ArtifactList(self.isos)
-        for name, versions in self.isos.iteritems():
+        new_isos = ArtifactList(self.artifacts)
+        for name, versions in self.artifacts.iteritems():
             if len(versions) <= keep:
                 continue
             to_keep = ArtifactName()
@@ -232,29 +235,30 @@ class IsoStore(ArtifactStore):
             for version in versions.keys():
                 logger.info('Deleting %s version %s', name, version)
                 versions.del_version(version, noop)
-        self.isos = new_isos
+        self.artifacts = new_isos
 
-    def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
+    def get_artifacts(self, regmatch=None, fmatch=None):
         """
-        Get the list of rpms, filtered or not.
+        Get the list of isos, filtered or not.
         :param regmatch: Regular expression that will be applied to the path of
             each package to filter it
         :param fmatch: Filter function that must return True for a package to
-            be selected, will be passed the RPM object as only parameter
-        :param latest: If set to N>0, it will return only the N latest versions
-            for each package
+            be selected, will be passed the iso object as only parameter
         """
-        return self.isos.get_artifacts(
+        return self.artifacts.get_artifacts(
             regmatch=regmatch,
-            fmatch=fmatch,
-            latest=latest)
+            fmatch=fmatch)
 
-    def get_latest(self, num=1):
+    def get_latest(self, regmatch=None, fmatch=None, num=1):
         """
-        Return the num latest versions for each rpm in the repo
+        Return the num latest versions for each iso in the repo
         :param num: number of latest versions to return
         """
-        return [iso.path for iso in self.get_artifacts(latest=num)]
+        return self.artifacts.get_artifacts(
+            regmatch=regmatch,
+            fmatch=fmatch,
+            latest=num,
+        )
 
     def sign_isos(self):
         """

@@ -27,8 +27,9 @@ class ArtifactStore(object):
             if name != 'ArtifactStore':
                 STORES[name] = cls
 
-    def __init__(self, config):
+    def __init__(self, config, artifacts):
         self.config = config
+        self.artifacts = artifacts
         super(ArtifactStore, self).__init__()
 
     @classmethod
@@ -90,7 +91,24 @@ class ArtifactStore(object):
         Returns the latest num versions for each artifact in the store.
 
         :param num: number of newest versions to return
+        :rtype: `repoman.common.artifact.Artifact`
         """
+
+    def get_all_but_latest(self, num=1, **args):
+        """
+        Returns the versions not in the latest num versions for each artifact
+        in the store.
+
+        :param num: number of newest versions to return
+        :rtype: `repoman.common.artifact.Artifact`
+        """
+        latest = self.get_latest(num=num)
+        logging.debug('Got latest: %s', latest)
+        return [
+            pkg
+            for pkg
+            in self.get_artifacts(fmatch=lambda art: art not in latest)
+        ]
 
     def get_empty_copy(self):
         """
@@ -99,7 +117,7 @@ class ArtifactStore(object):
         return self.__class__(self.config)
 
     @abstractmethod
-    def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
+    def get_artifacts(self, regmatch=None, fmatch=None):
         """
         Returns the list of artifacts matching the params
 
@@ -109,6 +127,14 @@ class ArtifactStore(object):
             passed as parameter
         :param latest: number of latest versions to return (0 for all,)
         """
+
+    def delete(self, artifact):
+        """
+        Remove an artifact from the store
+
+        :param artifact: instance of `repoman.common.artifact.Artifact`
+        """
+        self.artifacts.delete_artifact(artifact)
 
 
 def has_store(artifact, stores):

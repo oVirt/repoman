@@ -1,6 +1,6 @@
 Name: signed_rpm
-Version: 2.0
-Release: 1%{dist}
+Version: 2.1
+Release: 2%{dist}
 Summary: Test rpm for repoman
 
 Group: Nogroup

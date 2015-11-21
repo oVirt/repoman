@@ -38,7 +38,7 @@ class LatestFilter(ArtifactFilter):
         filtered_arts = set()
         for store in stores:
             filtered_arts = filtered_arts.union(
-                store.get_latest(num=int(latest))
+                art.path for art in store.get_latest(num=int(latest))
             )
         for artifact in filtered_arts:
             logger.debug("Passed the filter: %s", artifact)

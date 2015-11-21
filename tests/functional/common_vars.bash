@@ -1,3 +1,4 @@
+# coverage related vars
 OUT_DIR=$BATS_TEST_DIRNAME/../../exported-artifacts/coverage/functional
 echo "#!/bin/bash" > $BATS_TEST_DIRNAME/repoman_coverage
 echo "coverage run -a $(which repoman) \"\$@\"" >> $BATS_TEST_DIRNAME/repoman_coverage
@@ -22,9 +23,42 @@ UNSIGNED_RPM_EXPECTED_PATHS=(
 SIGNED_RPMS=(
     fixtures/signed_rpm-1.0-1.fc21.x86_64.rpm
     fixtures/signed_rpm-2.0-1.fc23.x86_64.rpm
+    fixtures/signed_rpm-2.1-1.fc23.x86_64.rpm
+    fixtures/signed_rpm-2.1-2.fc23.x86_64.rpm
 )
 SIGNED_RPM_EXPECTED_PATHS=(
     rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.0-1.fc23.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-1.fc23.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-2.fc23.x86_64.rpm
+)
+ALL_RPMS=(
+    "${UNSIGNED_RPMS[@]}"
+    "${SIGNED_RPMS[@]}"
+)
+ALL_EXPECTED_RPM_PATHS=(
+    "${UNSIGNED_RPM_EXPECTED_PATHS[@]}"
+    "${SIGNED_RPM_EXPECTED_PATHS[@]}"
+)
+ALL_EXPECTED_RPM_LATEST=(
+    rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
+    rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-2.fc23.x86_64.rpm
+)
+ALL_UNEXPECTED_RPM_LATEST=(
+    rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-1.fc23.x86_64.rpm
+)
+ALL_EXPECTED_RPM_LATEST_TWO=(
+    rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
+    rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
+    rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-1.fc23.x86_64.rpm
+    rpm/fc23/x86_64/signed_rpm-2.1-2.fc23.x86_64.rpm
+)
+ALL_UNEXPECTED_RPM_LATEST_TWO=(
     rpm/fc23/x86_64/signed_rpm-2.0-1.fc23.x86_64.rpm
 )
 NO_DISTRO_RPM=fixtures/unsigned_rpm-1.0-1.x86_64.rpm
@@ -75,3 +109,20 @@ FULL_SRPM_FILES=(
     kexec-tools-2.0.4-vmcore-dmesg-stack-smashing-happend-in-extreme-case.patch
     kexec-tools-2.0.4-vmcore-dmesg-struct_val_u64-not-casting-u64-to-u32.patch
 )
+
+
+# Isos
+ISOS=(
+    "fixtures/dummy-project-1.2.3.iso"
+    "fixtures/dummy-project-1.2.4.iso"
+    "fixtures/dummy-project-1.3.4.iso"
+)
+EXPECTED_ISO_PATHS=(
+    "iso/dummy-project/1.2.3/dummy-project-1.2.3.iso"
+    "iso/dummy-project/1.2.4/dummy-project-1.2.4.iso"
+    "iso/dummy-project/1.3.4/dummy-project-1.3.4.iso"
+)
+EXPECTED_ISO_MD5_PATH="${EXPECTED_ISO_PATH}.md5sum"
+EXPECTED_ISO_SIG_PATH="${EXPECTED_ISO_MD5_PATH}.sig"
+ISO_BADPATH="fixtures/dummy-project-without-version.iso"
+ISO_BADPATH_WITH_NUMBERS="fixtures/123/dummy-project-without-version.iso"

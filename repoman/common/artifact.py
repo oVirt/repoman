@@ -151,7 +151,7 @@ class ArtifactInode(list, object):
 
     def delete(self, noop=False):
         for artifact in self:
-            if noop:
+            if not noop:
                 os.remove(artifact.path)
             else:
                 logging.info('NOOP::%s would have been removed',
@@ -187,7 +187,7 @@ class ArtifactVersion(dict, object):
         self[artifact.inode].append(artifact)
         return True
 
-    def del_inode(self, inode, noop=False):
+    def delete_inode(self, inode, noop=False):
         if inode in self:
             self[inode].delete(noop)
             self.pop(inode)
@@ -206,6 +206,11 @@ class ArtifactVersion(dict, object):
                 fmatch=fmatch
             ))
         return arts
+
+    def delete(self, noop=False):
+        for inode in self:
+            self[inode].delete(noop)
+            self.pop(inode)
 
 
 class ArtifactName(dict, object):
@@ -249,10 +254,16 @@ class ArtifactName(dict, object):
             latest[sorted_list[pos]] = self.get(sorted_list[pos])
         return latest
 
-    def del_version(self, version, noop=False):
+    def delete_version(self, version, noop=False):
         if version in self:
             for inode in self[version].keys():
-                self[version].del_inode(inode, noop=noop)
+                self[version].delete_inode(inode, noop=noop)
+            self.pop(version)
+
+    def delete(self, noop=False):
+        for version in self:
+            for inode in self[version].keys():
+                self[version].delete_inode(inode, noop=noop)
             self.pop(version)
 
     def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
@@ -261,7 +272,7 @@ class ArtifactName(dict, object):
         logging.debug('ArtifactName.get_artifacts::fmatch=%s', fmatch)
         logging.debug('ArtifactName.get_artifacts::latest=%s', latest)
         if latest:
-            versions = self.get_latest(latest).values()
+            versions = self.get_latest(num=latest).values()
         else:
             versions = self.values()
         for version in versions:
@@ -291,10 +302,21 @@ class ArtifactList(dict, object):
                 self[artifact.name] = self.name_class(artifact.name)
             return self[artifact.name].add_artifact(artifact, onlyifnewer)
 
-    def del_artifact(self, name):
-        if name in self:
+    def delete_artifact(self, artifact):
+        """
+        :param artifact: 'Artifact' object to remove from the list
+        """
+        if artifact.name in self:
+            if artifact.version in self[artifact.name]:
+                self[artifact.name].delete_version(artifact.version)
+
+    def delete(self):
+        """
+        Deletes all the artifacts in this list
+        """
+        for name in self:
             for version in self[name].keys():
-                self[name].del_version(version)
+                self[name].delete_version(version)
             self.pop(name)
 
     def get_artifacts(self, regmatch=None, fmatch=None, latest=0):

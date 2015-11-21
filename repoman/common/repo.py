@@ -94,11 +94,11 @@ class Repo(object):
             with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
                 self.parse_conf_stream(conf_file_fd)
         logger.info('Resolving artifact source %s', artifact_source)
-        artifacts = self.parser.parse(artifact_source)
-        for artifact in artifacts:
+        artifact_paths = self.parser.parse(artifact_source)
+        for artifact_path in artifact_paths:
             for store in self.stores.itervalues():
-                if store.handles_artifact(artifact):
-                    store.add_artifact(artifact)
+                if store.handles_artifact(artifact_path):
+                    store.add_artifact(artifact_path)
 
     def parse_source_stream(self, source_stream):
         """
@@ -119,3 +119,20 @@ class Repo(object):
         """
         for store in self.stores.itervalues():
             store.save()
+
+    def delete_old(self, num_to_keep=1, noop=False):
+        """
+        Remove any old versions but the latest `num_to_keep`
+
+        :param num_to_keep: Number of versions to keef for each artifact
+        :param noop: if True will not actually remove anything
+        """
+        if not num_to_keep:
+            return
+        removed = []
+        for store in self.stores.itervalues():
+            for artifact in store.get_all_but_latest(num=num_to_keep):
+                removed.append(artifact)
+                if not noop:
+                    store.delete(artifact)
+        return removed

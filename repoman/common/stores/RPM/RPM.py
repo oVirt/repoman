@@ -127,9 +127,9 @@ class RPM(Artifact):
         self._md5 = None
         # Check if this package has to go to all distros
         if any((
-            self.name
+            self._name
             for nreg in to_all_distros
-            if re.match(nreg, self.name)
+            if re.match(nreg, self._name)
         )):
             self.distro = 'all'
         else:
@@ -144,7 +144,7 @@ class RPM(Artifact):
         # the same content or one of them is wrongly generated (the version was
         # not bumped or something)
         self.full_name = 'rpm(%s %s %s %s)' % (
-            self.name,
+            self._name,
             self.distro,
             self.arch,
             self.is_source and 'src' or 'bin',
@@ -160,12 +160,10 @@ class RPM(Artifact):
         else:
             release = self.release
         self.ver_rel = '%s-%s' % (self._version, release)
-#        if self.is_source:
-#            self.ver_rel += '-src'
 
     @property
     def name(self):
-        return self._name
+        return '%s.%s' % (self._name, self.distro)
 
     @property
     def version(self):
@@ -208,7 +206,7 @@ class RPM(Artifact):
             base_dir + '/' if base_dir else '',
             '%s' if self.distro == 'all' else self.distro,
             arch_path,
-            self.name,
+            self._name,
             self._version,
             self.release,
             arch_name,

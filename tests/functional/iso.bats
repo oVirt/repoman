@@ -6,24 +6,19 @@ load utils
 
 
 SUITE_NAME=stores.iso
-ISO_PATH="fixtures/dummy-project-1.2.3.iso"
-EXPECTED_ISO_PATH="iso/dummy-project/1.2.3/dummy-project-1.2.3.iso"
-ISO_BADPATH="fixtures/dummy-project-without-version.iso"
-ISO_BADPATH_WITH_NUMBERS="fixtures/123/dummy-project-without-version.iso"
-EXPECTED_ISO_MD5_PATH="${EXPECTED_ISO_PATH}.md5sum"
-EXPECTED_ISO_SIG_PATH="${EXPECTED_ISO_MD5_PATH}.sig"
-PGP_KEY=fixtures/my_key.asc
-PGP_PASS=123456
-PGP_ID=bedc9c4be614e4ba
 
 
 @test "stores.iso: Add iso" {
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
-    rm -rf "$BATS_TMPDIR/myrepo"
-    repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
+    for ((i=0; i<"${#ISOS[@]}"; i++)); do
+        iso_path="${ISOS[$i]}"
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        rm -rf "$BATS_TMPDIR/myrepo"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
 }
 
 
@@ -32,9 +27,12 @@ PGP_ID=bedc9c4be614e4ba
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
     rm -rf "$BATS_TMPDIR/myrepo"
-    repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
+    repoman_coverage --verbose "$repo" \
+        add "$BATS_TEST_DIRNAME/${ISOS[0]}"
+    repoman_coverage --verbose "$repo" \
+        add "$BATS_TEST_DIRNAME/${ISOS[1]}"
+    helpers.is_file "$repo/${EXPECTED_ISO_PATHS[0]}"
+    helpers.is_file "$repo/${EXPECTED_ISO_PATHS[1]}"
 }
 
 
@@ -87,10 +85,122 @@ PGP_ID=bedc9c4be614e4ba
     repoman_coverage --verbose "$repo" \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
         --passphrase "$PGP_PASS" \
-        add "$BATS_TEST_DIRNAME/$ISO_PATH"
-    helpers.is_file "$repo/$EXPECTED_ISO_PATH"
-    helpers.is_file "$repo/$EXPECTED_ISO_MD5_PATH"
-    helpers.is_file "$repo/$EXPECTED_ISO_SIG_PATH"
+        add "$BATS_TEST_DIRNAME/${ISOS[0]}"
+    helpers.is_file "$repo/${EXPECTED_ISO_PATHS[0]}"
+    helpers.is_file "$repo/${EXPECTED_ISO_PATHS[0]}.md5sum"
+    helpers.is_file "$repo/${EXPECTED_ISO_PATHS[0]}.md5sum.sig"
+}
+
+
+@test "stores.iso: Remove all but the latest from existing repo" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_isos="${#ISOS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$num_isos; i++)); do
+        iso_path="${ISOS[$i]}"
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        remove-old --keep 1
+    # check that only the latest is there
+    for ((i=0; i<$num_isos; i++)); do
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        if [[ "$i" == $(($num_isos - 1)) ]]; then
+            helpers.is_file "$repo/$expected_path"
+        else
+            helpers.isnt_file "$repo/$expected_path"
+        fi
+    done
+}
+
+
+@test "stores.iso: Remove all but the latest 2 from existing repo" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_isos="${#ISOS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$num_isos; i++)); do
+        iso_path="${ISOS[$i]}"
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        remove-old --keep 2
+    # check that only the latest 2 are there
+    for ((i=0; i<$num_isos; i++)); do
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        if [[ "$i" -ge $(($num_isos - 2)) ]]; then
+            helpers.is_file "$repo/$expected_path"
+        else
+            helpers.isnt_file "$repo/$expected_path"
+        fi
+    done
+}
+
+
+@test "stores.iso: When adding, leave only the latest" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_isos="${#ISOS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$(($num_isos - 1)); i++)); do
+        iso_path="${ISOS[$i]}"
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        add \
+            --keep-latest 1 \
+            "$BATS_TEST_DIRNAME/${ISOS[@]: -1}"
+    # check that only the latest 2 are there
+    for ((i=0; i<$num_isos; i++)); do
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        if [[ "$i" -eq $(($num_isos - 1)) ]]; then
+            helpers.is_file "$repo/$expected_path"
+        else
+            helpers.isnt_file "$repo/$expected_path"
+        fi
+    done
+}
+
+
+@test "stores.iso: When adding, leave only the latest 2" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_isos="${#ISOS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$(($num_isos - 1)); i++)); do
+        iso_path="${ISOS[$i]}"
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        add \
+            --keep-latest 2 \
+            "$BATS_TEST_DIRNAME/${ISOS[@]: -1}"
+    # check that only the latest 2 are there
+    for ((i=0; i<$num_isos; i++)); do
+        expected_path="${EXPECTED_ISO_PATHS[$i]}"
+        if [[ "$i" -ge $(($num_isos - 2)) ]]; then
+            helpers.is_file "$repo/$expected_path"
+        else
+            helpers.isnt_file "$repo/$expected_path"
+        fi
+    done
 }
 
 

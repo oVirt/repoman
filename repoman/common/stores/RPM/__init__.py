@@ -38,7 +38,6 @@ repository_dir
 import os
 import logging
 import subprocess
-import gnupg
 import multiprocessing as mp
 from .. import ArtifactStore
 from .RPM import (
@@ -58,10 +57,12 @@ from ...utils import (
 logger = logging.getLogger(__name__)
 
 
-class CreaterepoError(Exception): pass  # flake8: noqa
+class CreaterepoError(Exception):
+    pass
 
 
-class CreatereposError(Exception): pass  # flake8: noqa
+class CreatereposError(Exception):
+    pass
 
 
 class RPMStore(ArtifactStore):
@@ -136,8 +137,12 @@ class RPMStore(ArtifactStore):
             automatically add all the rpms under it to the repo if any.
         :param config: configuration for the store
         """
+        ArtifactStore.__init__(
+            self,
+            config=config,
+            artifacts=RPMList(),
+        )
         self.name = self.__class__.__name__
-        self.rpms = RPMList()
         self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path or ('Non persistent %s' % self.name)
         self.rpmdir = config.get('rpm_dir')
@@ -147,7 +152,6 @@ class RPMStore(ArtifactStore):
         self.sign_passphrase = config.get('signing_passphrase')
         self.on_wrong_distro = config.get('on_wrong_distro')
         # init first, add existing repo after
-        super(RPMStore, self).__init__(config=config)
         if repo_path:
             logger.info('Loading repo %s', repo_path)
             for pkg in list_files(repo_path, '.rpm'):
@@ -213,7 +217,7 @@ class RPMStore(ArtifactStore):
                         self.CONFIG_SECTION,
                     )
                 return
-        if self.rpms.add_pkg(pkg, onlyifnewer):
+        if self.artifacts.add_pkg(pkg, onlyifnewer):
             if to_copy:
                 self.to_copy.append(pkg)
             if not hidelog:
@@ -284,7 +288,7 @@ class RPMStore(ArtifactStore):
         Check if the given package is the latest version in the repo
         :pram pkg: RPM instance of the package to compare
         """
-        verlist = self.rpms.get(pkg.full_name, {})
+        verlist = self.artifacts.get(pkg.full_name, {})
         if not verlist or pkg.full_version in verlist.get_latest():
             return True
         return False
@@ -301,7 +305,7 @@ class RPMStore(ArtifactStore):
         logger.info('')
         logger.info('Extracting sources')
         logger.info("Generating src directory from srpms")
-        for versions in self.rpms.itervalues():
+        for versions in self.artifacts.itervalues():
             for version in versions.itervalues():
                 for inode in version.itervalues():
                     pkg = inode[0]
@@ -310,7 +314,7 @@ class RPMStore(ArtifactStore):
                 else:
                     continue
                 logger.info("Parsing srpm %s", pkg)
-                dst_dir = '%s/src/%s' % (self.path, pkg.name)
+                dst_dir = '%s/src/%s' % (self.path, pkg._name)
                 extract_sources(pkg.path, dst_dir, with_patches)
                 if key:
                     sign_detached(dst_dir, key, passphrase)
@@ -353,8 +357,8 @@ class RPMStore(ArtifactStore):
         :param noop: If set, will only log what will be done, not actually
             doing anything.
         """
-        new_rpms = RPMList(self.rpms)
-        for name, versions in self.rpms.iteritems():
+        new_rpms = RPMList(self.artifacts)
+        for name, versions in self.artifacts.iteritems():
             if len(versions) <= keep:
                 continue
             to_keep = RPMName()
@@ -366,11 +370,12 @@ class RPMStore(ArtifactStore):
             for version in versions.keys():
                 logger.info('Deleting %s version %s', name, version)
                 versions.del_version(version, noop)
-        self.rpms = new_rpms
+        self.artifacts = new_rpms
 
     def get_rpms(self, regmatch=None, fmatch=None, latest=0):
         """
         Get the list of rpms, filtered or not.
+
         :param regmatch: Regular expression that will be applied to the path of
             each package to filter it
         :param fmatch: Filter function that must return True for a package to
@@ -378,23 +383,29 @@ class RPMStore(ArtifactStore):
         :param latest: If set to N>0, it will return only the N latest versions
             for each package
         """
-        logging.debug('RPMStore.get_rpms::regmatch=%s', regmatch)
-        logging.debug('RPMStore.get_rpms::fmatch=%s', fmatch)
-        logging.debug('RPMStore.get_rpms::latest=%s', latest)
-        return self.rpms.get_artifacts(
+        logger.debug('RPMStore.get_rpms::regmatch=%s', regmatch)
+        logger.debug('RPMStore.get_rpms::fmatch=%s', fmatch)
+        logger.debug('RPMStore.get_rpms::latest=%s', latest)
+        return self.artifacts.get_artifacts(
             regmatch=regmatch,
             fmatch=fmatch,
             latest=latest,
         )
 
-    def get_latest(self, num=1):
+    def get_latest(self, regmatch=None, fmatch=None, num=1):
         """
         Return the num latest versions for each rpm in the repo
-        :param num: number of latest versions to return
-        """
-        return [pkg.path for pkg in self.get_rpms(latest=num)]
 
-    def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
+        :param num: number of latest versions to return
+        :rtype: `repoman.common.artifact.Artifact`
+        """
+        return [
+            pkg
+            for pkg
+            in self.get_rpms(regmatch=regmatch, fmatch=fmatch, latest=num)
+        ]
+
+    def get_artifacts(self, regmatch=None, fmatch=None):
         """
         Returns the list of artifacts matching the params
 
@@ -402,12 +413,10 @@ class RPMStore(ArtifactStore):
         :param fmatch: Filter function, must return True for packages to be
             included, or False to be excluded. The package object will be
             passed as parameter
-        :param latest: number of latest versions to return (0 for all,)
         """
         return self.get_rpms(
             regmatch=regmatch,
             fmatch=fmatch,
-            latest=latest,
         )
 
     def sign_rpms(self):

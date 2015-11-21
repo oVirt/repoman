@@ -44,8 +44,8 @@ def parse_args():
     parser.add_argument('dir', help='Directory of the repo.')
     parser.add_argument(
         '-k', '--key', required=False,
-        help='Path to the key to use when signing, will not sign any rpms if '
-        'not passed.'
+        help='Path to the key to use when signing, will not sign any '
+        'artifacts if not passed.'
     )
     parser.add_argument(
         '--passphrase', required=False, default='ask',
@@ -56,21 +56,28 @@ def parse_args():
         help='Generate the sources tree.'
     )
     repo_subparser = parser.add_subparsers(dest='repoaction')
-    add_rpm = repo_subparser.add_parser('add', help='Add an artifact')
-    add_rpm.add_argument(
+    add_artifact = repo_subparser.add_parser('add', help='Add an artifact')
+    add_artifact.add_argument(
         '-t', '--temp-dir', action='store', default=None,
         help='Temporary dir to use when downloading artifacts'
     )
-    add_rpm.add_argument(
+    add_artifact.add_argument(
         '--read-sources-from-stdin', action='store_true',
         help='Read the sources from stdin instead of the arguments.',
     )
-    add_rpm.add_argument(
+    add_artifact.add_argument(
         'artifact_source', nargs='*',
         help=(
             'An artifact source to add, it can be one of: ' +
             ', '.join(', '.join(source.formats_list())
                       for source in SOURCES.itervalues())
+        )
+    )
+    add_artifact.add_argument(
+        '--keep-latest', required=False, type=int, metavar='NUM',
+        default=0, help=(
+            'If passed, will remove all the artifact versions but the latest '
+            'NUM'
         )
     )
 
@@ -94,7 +101,7 @@ def parse_args():
         help='Remove old versions of packages.'
     )
     remove_old.add_argument(
-        '-k', '--keep', action='store', default=1,
+        '-k', '--keep', type=int, default=1,
         help='Number of versions to keep'
     )
 
@@ -182,15 +189,37 @@ def main():
     repo = Repo(path=path, config=config)
     logger.info('')
     if args.repoaction == 'add':
+        if args.keep_latest < 0:
+            logger.error('keep-latest must be >0')
+            sys.exit(1)
         logger.info('Adding artifacts to the repo %s', repo.path)
         if args.read_sources_from_stdin:
             repo.parse_source_stream(sys.stdin.readlines())
         else:
             for art_src in args.artifact_source:
                 repo.add_source(art_src.strip())
+        if args.keep_latest > 0:
+            header_msg = 'Removed'
+            if args.noop:
+                header_msg = 'Would have removed'
+            for artifact in repo.delete_old(
+                num_to_keep=args.keep_latest,
+                noop=args.noop
+            ):
+                logging.info('%s %s', header_msg, artifact)
         logger.info('')
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')
     elif args.repoaction == 'remove-old':
-        repo.delete_old(keep=int(args.keep), noop=args.noop)
+        if args.keep <= 0:
+            logger.error('keep must be >0')
+            sys.exit(1)
+        header_msg = 'Removed'
+        if args.noop:
+            header_msg = 'Would have removed'
+        for artifact in repo.delete_old(
+            num_to_keep=args.keep,
+            noop=args.noop
+        ):
+            logging.info('%s %s', header_msg, artifact)
     repo.save()

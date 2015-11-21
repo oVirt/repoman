@@ -61,7 +61,6 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
     helpers.contains "$output" "No artifacts found"
 }
 
-
 @test "basic: add package to new repo passed through stdin, with comments and empty lines" {
     local repo \
         conf
@@ -83,6 +82,68 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
     echo "$output"
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+}
+
+
+@test "basic: When adding with keep-latest and noop, don't remove anything" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$(($num_rpms - 1)); i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        --noop \
+        add \
+            --keep-latest 1 \
+            "$BATS_TEST_DIRNAME/${ALL_RPMS[@]: -1}"
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$unexpected_path"
+    done
+}
+
+
+@test "basic: When running remove-old with noop, don't actually remove" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    for ((i=0; i<$num_rpms; i++)); do
+        rpm_path="${ALL_RPMS[$i]}"
+        expected_path="${ALL_EXPECTED_RPM_PATHS[$i]}"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$rpm_path"
+        helpers.is_file "$repo/$expected_path"
+    done
+    repoman_coverage --verbose "$repo" \
+        --noop \
+        remove-old --keep 1
+    # check that only the latest is there
+    num_expected="${#ALL_EXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_expected; i++)); do
+        expected_path="${ALL_EXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$expected_path"
+    done
+    num_unexpected="${#ALL_UNEXPECTED_RPM_LATEST[@]}"
+    for ((i=0; i<$num_unexpected; i++)); do
+        unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
+        helpers.is_file "$repo/$unexpected_path"
+    done
 }
 
 

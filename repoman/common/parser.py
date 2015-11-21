@@ -57,6 +57,14 @@ class Parser(object):
         ])
 
     def parse(self, full_source_str):
+        """
+        Parses the given source sting and returns a list of resolved artifact
+        paths
+
+        :param full_source_str: Source sting to parse
+        :type full_source_str: Sting
+        :rtype: list of strings
+        """
         art_list = set()
         for stuple in self.sources.iteritems():
             aname = stuple[0]

@@ -28,17 +28,17 @@ class OnlyMissingFilter(ArtifactFilter):
         filters_str = split(filters_str, ':', 1)[-1]
         temp_stores = [store.get_empty_copy() for store in self.stores]
         # populate the stores with the artifacts
-        for artifact in art_list:
+        for artifact_path in art_list:
             for store in temp_stores:
-                if store.handles_artifact(artifact):
-                    store.add_artifact(artifact)
+                if store.handles_artifact(artifact_path):
+                    store.add_artifact(artifact_path)
                     # only add it to the first matching store
                     break
         # gather the latest artifacts from each store
         filtered_art_paths = set()
         filtered_art_names = set()
         for tmp_store in temp_stores:
-            for artifact in tmp_store.get_artifacts(latest=1):
+            for artifact in tmp_store.get_latest(num=1):
                 if artifact.name in filtered_art_names:
                     logger.debug(
                         "Did not pass the filter, already checked: %s",
@@ -50,9 +50,9 @@ class OnlyMissingFilter(ArtifactFilter):
                     return art1.name == artifact.name
 
                 already_in_dst_store = [
-                    store.get_artifacts(
+                    store.get_latest(
                         fmatch=same_name,
-                        latest=1,
+                        num=1,
                     )
                     for store in self.stores
                 ]

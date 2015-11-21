@@ -21,6 +21,14 @@ helpers.is_file() {
     return $?
 }
 
+helpers.isnt_file() {
+    local what="${1:?}"
+    echo "isnt file $what"
+    ! [[ -f "$what" ]]
+    return $?
+}
+
+
 helpers.is_dir() {
     local what="${1:?}"
     echo "is dir $what"
