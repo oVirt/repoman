@@ -92,7 +92,8 @@ class Repo(object):
         # sources)
         if artifact_source.startswith("conf:"):
             with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
-                self.parse_conf_stream(conf_file_fd)
+                self.parse_source_stream(conf_file_fd)
+            return
         logger.info('Resolving artifact source %s', artifact_source)
         artifact_paths = self.parser.parse(artifact_source)
         for artifact_path in artifact_paths:

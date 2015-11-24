@@ -147,6 +147,27 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
 }
 
 
+@test "basic: Work with 'conf:' sources" {
+    local repo
+    load utils
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    num_rpms="${#ALL_RPMS[@]}"
+    rm -rf "$BATS_TMPDIR/myrepo"
+    conf_source_file="$BATS_TMPDIR/conf_source_file.conf"
+    rm -rf "$conf_source_file"
+    for rpm in "${ALL_RPMS[@]}"; do
+        echo "$BATS_TEST_DIRNAME/$rpm" >> "$conf_source_file"
+    done
+    helpers.run repoman_coverage "$repo" add "conf:$conf_source_file"
+    echo "$output"
+    helpers.equals "$status" "0"
+    for expected_path in "${ALL_EXPECTED_RPM_PATHS[@]}"; do
+        helpers.is_file "$repo/$expected_path"
+    done
+}
+
+
 @test "basic: gather coverage data" {
     helpers.run utils.gather_coverage \
     "$SUITE_NAME" \
