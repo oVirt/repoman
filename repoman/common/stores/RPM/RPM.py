@@ -237,10 +237,13 @@ class RPM(Artifact):
                 ['pass phrase: ', 'passphrase: ', 'Passphrase: '],
                 timeout=5,
             )
-        except:
+        except Exception as exc:
             logging.error('Failed to sign')
-            logging.error(child)
-            raise
+            logging.debug(child)
+            # overriding as the default exception includes too much
+            # info, as passwords passed
+            exc.value = exc.value.replace(passwd, '*****')
+            raise exc
         # For some reason, on fedora>21 rpmsign needs some tries until it
         # properly signs
         done = False
@@ -251,16 +254,17 @@ class RPM(Artifact):
             try:
                 child.expect(pexpect.EOF, timeout=0.1)
                 done = True
-            except pexpect.TIMEOUT:
+            except pexpect.TIMEOUT as exc:
                 tries += 1
-                if tries >= 21:
+                # signing big rpms might take it's time
+                if tries >= 900:
                     logging.error('Failed to sign')
-                    logging.error(child)
-                    raise
+                    logging.debug(child)
+                    exc.value = exc.value.replace(passwd, '*****')
+                    raise exc
         child.close()
         if child.exitstatus != 0:
-            logging.error('Failed to sign')
-            logging.error(child)
+            logging.debug(child)
             raise Exception("Failed to sign package.")
         self.__init__(self.path)
         if not self.signature:
