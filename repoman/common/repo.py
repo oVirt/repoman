@@ -91,7 +91,8 @@ class Repo(object):
         # Handle the special case of a config file, a metasource (source of
         # sources)
         if artifact_source.startswith("conf:"):
-            self.parse_conf_file(artifact_source.split(':', 1)[1])
+            with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
+                self.parse_conf_stream(conf_file_fd)
         logger.info('Resolving artifact source %s', artifact_source)
         artifacts = self.parser.parse(artifact_source)
         for artifact in artifacts:
@@ -99,12 +100,18 @@ class Repo(object):
                 if store.handles_artifact(artifact):
                     store.add_artifact(artifact)
 
-    def parse_conf_file(self, conf_file_path):
-        with open(conf_file_path) as conf_file_fd:
-            for line in conf_file_fd:
-                if not line.strip() or line.strip().startswith('#'):
-                    continue
-                self.add_source(line.strip())
+    def parse_source_stream(self, source_stream):
+        """
+        Given a iterable of sources, add all that apply, skipping comments and
+        empty lines
+
+        :param source_stream: iterable with the sources, can be an open file
+            object as returned by `open`
+        """
+        for line in source_stream:
+            if not line.strip() or line.strip().startswith('#'):
+                continue
+            self.add_source(line.strip())
 
     def save(self):
         """

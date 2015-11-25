@@ -1,8 +1,8 @@
 #!/usr/bin/env bats
 
+load common_vars
 load helpers
 load utils
-load common_vars
 
 SUITE_NAME=basic
 BASE_RPM=fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
@@ -60,6 +60,31 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
     helpers.equals "$status" "1"
     helpers.contains "$output" "No artifacts found"
 }
+
+
+@test "basic: add package to new repo passed through stdin, with comments and empty lines" {
+    local repo \
+        conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    echo -e \
+        "$BATS_TEST_DIRNAME/${SIGNED_RPMS[0]}\n" \
+        "# dummy comment\n" \
+        "\n" \
+        "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
+    | repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            --read-sources-from-stdin
+    echo "$output"
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
+    helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+}
+
 
 @test "basic: gather coverage data" {
     helpers.run utils.gather_coverage \

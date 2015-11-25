@@ -185,11 +185,10 @@ def main():
     if args.repoaction == 'add':
         logger.info('Adding artifacts to the repo %s', repo.path)
         if args.read_sources_from_stdin:
-            sources = sys.stdin.readlines()
+            repo.parse_source_stream(sys.stdin.readlines())
         else:
-            sources = args.artifact_source
-        for art_src in sources:
-            repo.add_source(art_src.strip())
+            for art_src in args.artifact_source:
+                repo.add_source(art_src.strip())
         logger.info('')
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')
