@@ -10,7 +10,6 @@ import logging
 import sys
 from getpass import getpass
 
-from urllib3 import connectionpool
 
 from .common.config import Config
 from .common.repo import Repo
@@ -120,7 +119,7 @@ def main():
         )
         logging.root.level = logging.DEBUG
         #  we want connectionpool debug logs
-        connectionpool.log.setLevel(logging.DEBUG)
+        logging.getLogger('requests').setLevel(logging.DEBUG)
         logging.debug('Enabled verbose mode')
     else:
         logging.basicConfig(
@@ -133,7 +132,7 @@ def main():
         )
         logger.root.level = logging.INFO
         #  we don't want connectionpool info logs
-        connectionpool.log.setLevel(logging.WARN)
+        logging.getLogger('requests').setLevel(logging.ERROR)
 
     if args.config:
         config = Config(path=args.config)
