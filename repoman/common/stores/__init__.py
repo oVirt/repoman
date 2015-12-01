@@ -128,13 +128,18 @@ class ArtifactStore(object):
         :param latest: number of latest versions to return (0 for all,)
         """
 
-    def delete(self, artifact):
+    def delete_version(self, art_name, art_version):
         """
-        Remove an artifact from the store
+        Remove a version of an artifact from the store
 
-        :param artifact: instance of `repoman.common.artifact.Artifact`
+        Args:
+            art_name (str): Name of the artifact to remove a version for
+            art_version (str): Version to remove
+
+        Returns:
+            None
         """
-        self.artifacts.delete_artifact(artifact)
+        self.artifacts.delete_version(art_name, art_version)
 
 
 def has_store(artifact, stores):

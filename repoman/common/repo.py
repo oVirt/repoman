@@ -135,5 +135,8 @@ class Repo(object):
             for artifact in store.get_all_but_latest(num=num_to_keep):
                 removed.append(artifact)
                 if not noop:
-                    store.delete(artifact)
+                    store.delete_version(
+                        art_name=artifact.name,
+                        art_version=artifact.version,
+                    )
         return removed

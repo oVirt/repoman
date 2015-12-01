@@ -202,11 +202,15 @@ def main():
             header_msg = 'Removed'
             if args.noop:
                 header_msg = 'Would have removed'
+            # save to make sure that the rpm's inodes point to the new repo
+            # before removing them
+            repo.save()
             for artifact in repo.delete_old(
                 num_to_keep=args.keep_latest,
                 noop=args.noop
             ):
-                logging.info('%s %s', header_msg, artifact)
+                logger.info('%s %s', header_msg, artifact.path)
+            sys.exit(0)
         logger.info('')
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')

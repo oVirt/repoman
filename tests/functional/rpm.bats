@@ -485,6 +485,10 @@ EOC
         unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
         helpers.isnt_file "$repo/$unexpected_path"
     done
+    # check that the original rpms are still there
+    for rpm_path in "${ALL_RPMS[@]}"; do
+        helpers.is_file "$BATS_TEST_DIRNAME/$rpm_path"
+    done
 }
 
 
@@ -513,6 +517,10 @@ EOC
     for ((i=0; i<$num_unexpected; i++)); do
         unexpected_path="${ALL_UNEXPECTED_RPM_LATEST_TWO[$i]}"
         helpers.isnt_file "$repo/$unexpected_path"
+    done
+    # check that the original rpms are still there
+    for rpm_path in "${ALL_RPMS[@]}"; do
+        helpers.is_file "$BATS_TEST_DIRNAME/$rpm_path"
     done
 }
 
@@ -545,6 +553,10 @@ EOC
         unexpected_path="${ALL_UNEXPECTED_RPM_LATEST[$i]}"
         helpers.isnt_file "$repo/$unexpected_path"
     done
+    # check that the original rpms are still there
+    for rpm_path in "${ALL_RPMS[@]}"; do
+        helpers.is_file "$BATS_TEST_DIRNAME/$rpm_path"
+    done
 }
 
 
@@ -575,6 +587,10 @@ EOC
     for ((i=0; i<$num_unexpected; i++)); do
         unexpected_path="${ALL_UNEXPECTED_RPM_LATEST_TWO[$i]}"
         helpers.isnt_file "$repo/$unexpected_path"
+    done
+    # check that the original rpms are still there
+    for rpm_path in "${ALL_RPMS[@]}"; do
+        helpers.is_file "$BATS_TEST_DIRNAME/$rpm_path"
     done
 }
 

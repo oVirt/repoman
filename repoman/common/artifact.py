@@ -151,9 +151,9 @@ class ArtifactInode(list, object):
 
     def delete(self, noop=False):
         for artifact in self:
-            if not noop:
+            if not noop and os.path.exists(artifact.path):
                 os.remove(artifact.path)
-            else:
+            elif noop:
                 logging.info('NOOP::%s would have been removed',
                              artifact.path)
 
@@ -302,13 +302,22 @@ class ArtifactList(dict, object):
                 self[artifact.name] = self.name_class(artifact.name)
             return self[artifact.name].add_artifact(artifact, onlyifnewer)
 
-    def delete_artifact(self, artifact):
+    def delete_version(self, art_name, art_version):
         """
-        :param artifact: 'Artifact' object to remove from the list
+        Removes the given artifact's version if it's in the list
+
+        Args:
+            art_name (str): Name of the artifact to remove it's version
+            art_version (str): Version to remove
+
+        Returns:
+            None
         """
-        if artifact.name in self:
-            if artifact.version in self[artifact.name]:
-                self[artifact.name].delete_version(artifact.version)
+        if art_name in self:
+            if art_version in self[art_name]:
+                self[art_name].delete_version(art_version)
+            if not self[art_name]:
+                self.pop(art_name)
 
     def delete(self):
         """
