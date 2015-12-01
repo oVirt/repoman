@@ -53,6 +53,9 @@ from .utils import (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 class Artifact(object):
     __metaclass__ = ABCMeta
 
@@ -154,21 +157,21 @@ class ArtifactInode(list, object):
             if not noop and os.path.exists(artifact.path):
                 os.remove(artifact.path)
             elif noop:
-                logging.info('NOOP::%s would have been removed',
-                             artifact.path)
+                logger.info('NOOP::%s would have been removed',
+                            artifact.path)
 
     def get_artifacts(self, regmatch=None, fmatch=None):
-        logging.debug('ArtifactInode.get_artifacts::%s', self)
+        logger.debug('ArtifactInode::%s', self)
         arts = list(self)
-        logging.debug('ArtifactInode.get_artifacts::arts=%s', arts)
-        logging.debug('ArtifactInode.get_artifacts::fmatch=%s', fmatch)
-        logging.debug('ArtifactInode.get_artifacts::regmatch=%s', regmatch)
+        logger.debug('ArtifactInode::arts=%s', arts)
+        logger.debug('ArtifactInode::fmatch=%s', fmatch)
+        logger.debug('ArtifactInode::regmatch=%s', regmatch)
         if regmatch:
             arts = [art for art in self if regmatch.search(art.path)]
         elif fmatch:
             arts = [art for art in arts if fmatch(art)]
-        logging.debug(
-            'ArtifactInode.get_artifacts::after filter arts=%s',
+        logger.debug(
+            'ArtifactInode::after filter arts=%s',
             arts,
         )
         return arts
@@ -194,11 +197,11 @@ class ArtifactVersion(dict, object):
 
     def get_artifacts(self, regmatch=None, fmatch=None):
         arts = []
-        logging.debug('ArtifactVersion.get_artifarcts::regmatch=%s', regmatch)
-        logging.debug('ArtifactVersion.get_artifacts::fmatch=%s', fmatch)
+        logger.debug('ArtifactVersion::regmatch=%s', regmatch)
+        logger.debug('ArtifactVersion::fmatch=%s', fmatch)
         for inode in self.itervalues():
-            logging.debug(
-                'ArtifactVersion.get_artifacts::Iterating ArtifactInode %s',
+            logger.debug(
+                'ArtifactVersion::Iterating ArtifactInode %s',
                 inode,
             )
             arts.extend(inode.get_artifacts(
@@ -268,16 +271,16 @@ class ArtifactName(dict, object):
 
     def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
         arts = []
-        logging.debug('ArtifactName.get_artifarcts::regmatch=%s', regmatch)
-        logging.debug('ArtifactName.get_artifacts::fmatch=%s', fmatch)
-        logging.debug('ArtifactName.get_artifacts::latest=%s', latest)
+        logger.debug('ArtifactName::regmatch=%s', regmatch)
+        logger.debug('ArtifactName::fmatch=%s', fmatch)
+        logger.debug('ArtifactName::latest=%s', latest)
         if latest:
             versions = self.get_latest(num=latest).values()
         else:
             versions = self.values()
         for version in versions:
-            logging.debug(
-                'ArtifactName.get_artifacts::Iterating ArtifactVersion %s',
+            logger.debug(
+                'ArtifactName::Iterating ArtifactVersion %s',
                 version,
             )
             arts.extend(version.get_artifacts(
@@ -339,12 +342,12 @@ class ArtifactList(dict, object):
         :param latest: number of latest versions to return (0 for all,)
         """
         arts = []
-        logging.debug('ArtifactVersion.get_artifarcts::regmatch=%s', regmatch)
-        logging.debug('ArtifactVersion.get_artifacts::fmatch=%s', fmatch)
-        logging.debug('ArtifactVersion.get_artifacts::latest=%s', latest)
+        logger.debug('ArtifactVersion::regmatch=%s', regmatch)
+        logger.debug('ArtifactVersion::fmatch=%s', fmatch)
+        logger.debug('ArtifactVersion::latest=%s', latest)
         for name in self.itervalues():
-            logging.debug(
-                'ArtifactList.get_artifacts::Iterating ArtifactName %s',
+            logger.debug(
+                'ArtifactList::Iterating ArtifactName %s',
                 name,
             )
             arts.extend(name.get_artifacts(
