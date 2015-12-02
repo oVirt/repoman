@@ -41,7 +41,14 @@ def parse_args():
         '-s', '--stores', required=False, default=','.join(STORES.keys()),
         help='Store classes to take into account when loading the '
         'repo. Available ones are %s' % ', '.join(STORES.keys()))
-    parser.add_argument('dir', help='Directory of the repo.')
+    parser.add_argument(
+        'dir',
+        help=(
+            "Directory of the repo. If there's a source entry in the form "
+            "repo-suffix:some_string, then that 'some_string' will be "
+            "postpended to the repo name"
+        )
+    )
     parser.add_argument(
         '-k', '--key', required=False,
         help='Path to the key to use when signing, will not sign any '

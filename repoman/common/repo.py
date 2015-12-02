@@ -21,6 +21,7 @@ import sys
 import tempfile
 import atexit
 
+from . import utils
 from .parser import Parser
 from .stores import STORES
 
@@ -101,6 +102,11 @@ class Repo(object):
             with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
                 self.parse_source_stream(conf_file_fd)
             return
+        elif artifact_source.startswith("repo-suffix:"):
+            repo_suffix = artifact_source.split(':', 1)[-1]
+            logger.info('Adding repo suffix %s', repo_suffix)
+            self.add_path_suffix(suffix=repo_suffix)
+            return
         logger.info('Resolving artifact source %s', artifact_source)
         artifact_paths = self.parser.parse(artifact_source)
         for artifact_path in artifact_paths:
@@ -147,3 +153,18 @@ class Repo(object):
                         art_version=artifact.version,
                     )
         return removed
+
+    def add_path_suffix(self, suffix):
+        """
+        Adds a suffix to the repo's path
+
+        Args:
+            suffix (str): Suffix to postpend to the repo's path
+
+        Returns:
+            None
+        """
+        clean_suffix = utils.sanitize_file_name(suffix)
+        for store in self.stores.values():
+            store.change_path(store.path + clean_suffix)
+        self.path += clean_suffix

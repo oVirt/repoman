@@ -195,6 +195,55 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
 }
 
 
+@test "basic: add package to new repo with suffix (included name sanity)" {
+    local repo \
+        conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    repo_suffixed="$repo.my_extra__dummy___suffix"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
+            'repo-suffix:.my_extra_/dummy/&^suffix'
+    echo "$output"
+    helpers.is_file "$repo_suffixed/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+}
+
+
+@test "basic: add package to existing repo with suffix (included name sanity)" {
+    local repo \
+        conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    repo_suffixed="$repo.my_extra__dummy___suffix"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$repo" "$repo_suffixed"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[0]}"
+    repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
+            'repo-suffix:.my_extra_/dummy/&^suffix'
+    echo "$output"
+    helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
+    helpers.isnt_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+    helpers.is_file "$repo_suffixed/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
+    helpers.is_file "$repo_suffixed/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+}
+
+
+
 @test "basic: gather coverage data" {
     helpers.run utils.gather_coverage \
     "$SUITE_NAME" \

@@ -269,3 +269,17 @@ class IsoStore(ArtifactStore):
             logger.info('Signing %s', iso)
             iso.sign(self.sign_key, passphrase)
         logger.info("Done signing")
+
+    def change_path(self, new_path):
+        """
+        Changes the store path to the given one, copying any artifacts if
+        needed
+
+        Args:
+            new_path (str): New path to set
+
+        Returns:
+            None
+        """
+        self.path = new_path
+        self.to_copy.extend(self.get_artifacts())

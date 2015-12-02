@@ -141,6 +141,19 @@ class ArtifactStore(object):
         """
         self.artifacts.delete_version(art_name, art_version)
 
+    @abstractmethod
+    def change_path(self, new_path):
+        """
+        Changes the store path to the given one, copying any artifacts if
+        needed
+
+        Args:
+            new_path (str): New path to set
+
+        Returns:
+            None
+        """
+
 
 def has_store(artifact, stores):
     """

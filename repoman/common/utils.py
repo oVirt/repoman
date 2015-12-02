@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-import os
-import sys
-import shutil
-import logging
-import subprocess
 import glob
+import logging
+import os
 import pprint
+import shutil
+import string
+import subprocess
+import sys
 from functools import partial
 
 import requests
@@ -442,3 +443,28 @@ def get_last(what, num):
         what = what[:]
         what.extend([None] * (num - len(what)))
         return what
+
+
+def sanitize_file_name(file_name, replacement='_'):
+    """
+    Replaces any unwanted characters from the given file or dir name with the
+    given replacement string
+
+    Args:
+        file_name (str): file or directory name to sanitize
+        replacement (str): what to put in place of the bad chars
+
+    Returns:
+        str: sanitized name with all the bad chars replaced
+
+    Example:
+        >>> sanitize_file_name("I'm an /ugly%#@!")
+        'I_m an _ugly____'
+        >>> sanitize_file_name("I'm an /ugly%#@!", replacement='-')
+        'I-m an -ugly----'
+    """
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    return ''.join(
+        c if c in valid_chars else replacement
+        for c in file_name
+    )
