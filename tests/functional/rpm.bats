@@ -595,17 +595,6 @@ EOC
 }
 
 
-@test "stores.rpm: gather coverage data" {
-    helpers.run utils.gather_coverage \
-    "$SUITE_NAME" \
-    "$BATS_TEST_DIRNAME" \
-    "$OUT_DIR" \
-    "stores/RPM/*"
-    echo "$output"
-    helpers.equals "$status" 0
-}
-
-
 @test "store.rpm: Add and sign multiple rpms (same rpm with multiple distros and other rpms)" {
     local repo
     local rpm
@@ -628,4 +617,15 @@ EOC
         helpers.equals "$status" "0"
         helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
     done
+}
+
+
+@test "stores.rpm: gather coverage data" {
+    helpers.run utils.gather_coverage \
+    "$SUITE_NAME" \
+    "$BATS_TEST_DIRNAME" \
+    "$OUT_DIR" \
+    "stores/RPM/*"
+    echo "$output"
+    helpers.equals "$status" 0
 }
