@@ -13,11 +13,14 @@ repository_dir
 └── store2_dir
     └── ...
 """
+import logging
 import os
 import shutil
-import logging
+import sys
+
 import tempfile
 import atexit
+
 from .parser import Parser
 from .stores import STORES
 
@@ -91,6 +94,10 @@ class Repo(object):
         # Handle the special case of a config file, a metasource (source of
         # sources)
         if artifact_source.startswith("conf:"):
+            conf_path = artifact_source.split(':', 1)[1]
+            if conf_path == 'stdin':
+                self.parse_source_stream(sys.stdin.readlines())
+                return
             with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
                 self.parse_source_stream(conf_file_fd)
             return

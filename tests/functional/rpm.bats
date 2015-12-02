@@ -451,7 +451,7 @@ EOC
         -v \
         "$repo" \
             add \
-            --read-sources-from-stdin
+            conf:stdin
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"

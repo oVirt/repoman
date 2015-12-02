@@ -78,11 +78,38 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
         -v \
         "$repo" \
             add \
-            --read-sources-from-stdin
+            conf:stdin
     echo "$output"
     helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
 }
+
+
+@test "basic: add mixed stdin and cli sources" {
+    local repo \
+        conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    conf="$BATS_TMPDIR/conf"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    echo -e \
+        "$BATS_TEST_DIRNAME/${SIGNED_RPMS[0]}\n" \
+        "# dummy comment\n" \
+        "\n" \
+        "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
+    | repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[2]}" \
+            conf:stdin
+    echo "$output"
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
+    helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
+    helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[2]}"
+}
+
 
 
 @test "basic: When adding with keep-latest and noop, don't remove anything" {

@@ -62,15 +62,15 @@ def parse_args():
         help='Temporary dir to use when downloading artifacts'
     )
     add_artifact.add_argument(
-        '--read-sources-from-stdin', action='store_true',
-        help='Read the sources from stdin instead of the arguments.',
-    )
-    add_artifact.add_argument(
         'artifact_source', nargs='*',
         help=(
-            'An artifact source to add, it can be one of: ' +
-            ', '.join(', '.join(source.formats_list())
-                      for source in SOURCES.itervalues())
+            'An artifact source to add, it can be one of: '
+            'conf:path_to_file will load all the sources from that file, '
+            'conf:stdin wil read the sources from stdin'
+            + ', '.join(
+                ', '.join(source.formats_list())
+                for source in SOURCES.itervalues()
+            )
         )
     )
     add_artifact.add_argument(
@@ -109,6 +109,7 @@ def parse_args():
         'sign-rpms',
         help='Sign all the packages.'
     )
+
     return parser.parse_args()
 
 
@@ -193,11 +194,8 @@ def main():
             logger.error('keep-latest must be >0')
             sys.exit(1)
         logger.info('Adding artifacts to the repo %s', repo.path)
-        if args.read_sources_from_stdin:
-            repo.parse_source_stream(sys.stdin.readlines())
-        else:
-            for art_src in args.artifact_source:
-                repo.add_source(art_src.strip())
+        for art_src in args.artifact_source:
+            repo.add_source(art_src.strip())
         if args.keep_latest > 0:
             header_msg = 'Removed'
             if args.noop:
