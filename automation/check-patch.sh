@@ -32,3 +32,19 @@ repoman -h
 echo "#"
 echo "# Installation OK"
 echo "######################################################################"
+
+echo "######################################################################"
+echo "#  Generating report"
+echo "#"
+
+cat <<EOR > exported-artifacts/index.html
+<html><body>
+<a href="coverage/functional/coverage.total.html/index.html">
+    Coverage report
+</a>
+EOR
+
+echo "#"
+echo "# Report generated"
+echo "######################################################################"
+
