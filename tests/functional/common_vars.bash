@@ -14,11 +14,17 @@ UNSIGNED_RPMS=(
     fixtures/unsigned_rpm-1.0-1.fc21.x86_64.rpm
     fixtures/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     fixtures/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    fixtures/unsigned_rpm-1.1-1.fc21.x86_64.rpm
+    fixtures/unsigned_rpm-1.0-2.fc21.noarch.rpm
+    fixtures/unsigned_rpm-1.0-3.fc21.noarch.rpm
 )
 UNSIGNED_RPM_EXPECTED_PATHS=(
     rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
     rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
+    rpm/fc21/noarch/unsigned_rpm-1.0-2.fc21.noarch.rpm
+    rpm/fc21/noarch/unsigned_rpm-1.0-3.fc21.noarch.rpm
 )
 SIGNED_RPMS=(
     fixtures/signed_rpm-1.0-1.fc21.x86_64.rpm
@@ -41,8 +47,9 @@ ALL_EXPECTED_RPM_PATHS=(
     "${SIGNED_RPM_EXPECTED_PATHS[@]}"
 )
 ALL_EXPECTED_RPM_LATEST=(
-    rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
     rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
+    rpm/fc21/noarch/unsigned_rpm-1.0-3.fc21.noarch.rpm
     rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
     rpm/fc23/x86_64/signed_rpm-2.1-2.fc23.x86_64.rpm
 )
@@ -51,9 +58,11 @@ ALL_UNEXPECTED_RPM_LATEST=(
     rpm/fc23/x86_64/signed_rpm-2.1-1.fc23.x86_64.rpm
 )
 ALL_EXPECTED_RPM_LATEST_TWO=(
-    rpm/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rpm
     rpm/fc21/x86_64/unsigned_rpm-1.0-2.fc21.x86_64.rpm
+    rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
     rpm/fc22/x86_64/unsigned_rpm-1.0-1.fc22.x86_64.rpm
+    rpm/fc21/noarch/unsigned_rpm-1.0-2.fc21.noarch.rpm
+    rpm/fc21/noarch/unsigned_rpm-1.0-3.fc21.noarch.rpm
     rpm/fc21/x86_64/signed_rpm-1.0-1.fc21.x86_64.rpm
     rpm/fc23/x86_64/signed_rpm-2.1-1.fc23.x86_64.rpm
     rpm/fc23/x86_64/signed_rpm-2.1-2.fc23.x86_64.rpm

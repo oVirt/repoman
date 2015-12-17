@@ -163,7 +163,7 @@ class RPM(Artifact):
 
     @property
     def name(self):
-        return '%s.%s' % (self._name, self.distro)
+        return '%s.%s.%s' % (self._name, self.distro, self.arch)
 
     @property
     def version(self):
