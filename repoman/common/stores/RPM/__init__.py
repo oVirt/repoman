@@ -5,35 +5,34 @@ This module holds the class and methods to manage an rpm store and it's
 sources.
 
 In our case an rpm store is not just a yum repository but a set of them and
-src files, in the following structure:
+src files, in the following structure::
 
-
-repository_dir
-├── rpm
-│   ├── $dist1  <- this is a yum repository
-│   │   ├── repodata
-│   │   │   └── ...
-│   │   ├── SRPMS
-│   │   │   ├── $srcrpm1
-│   │   │   ├── $srcrpm2
-│   │   │   └── ...
-│   │   ├── $arch1
-│   │   │   ├── $rpm1
-│   │   │   ├── $rpm2
-│   │   │   └── ...
-│   │   ├── $arch2
-│   │   └── ...
-│   ├── $dist2  <- another yum reposiory
-│   │   └── ...
-│   └── ...
-└── src
-    ├── $project1
-    │   │   ├── $source1
-    │   │   ├── $source1.sig
-    │   │   ├── $source2
+    repository_dir
+    ├── rpm
+    │   ├── $dist1  <- this is a yum repository
+    │   │   ├── repodata
+    │   │   │   └── ...
+    │   │   ├── SRPMS
+    │   │   │   ├── $srcrpm1
+    │   │   │   ├── $srcrpm2
+    │   │   │   └── ...
+    │   │   ├── $arch1
+    │   │   │   ├── $rpm1
+    │   │   │   ├── $rpm2
+    │   │   │   └── ...
+    │   │   ├── $arch2
+    │   │   └── ...
+    │   ├── $dist2  <- another yum reposiory
     │   │   └── ...
     │   └── ...
-    └── ...
+    └── src
+        ├── $project1
+        │   │   ├── $source1
+        │   │   ├── $source1.sig
+        │   │   ├── $source2
+        │   │   └── ...
+        │   └── ...
+        └── ...
 """
 import os
 import logging
@@ -74,13 +73,13 @@ class RPMStore(ArtifactStore):
 
     Configuration options:
 
-      distro_reg
+    * distro_reg
         Regular expression to extract the distribution from the release string
 
-      extra_symlinks
+    * extra_symlinks
         Comma separated list of orig:symlink pairs to create links, the paths
 
-      on_wrong_distro
+    * on_wrong_distro
         Action to execute when a package has an incorrect distro (it's release
         string does not match the distro_reg regular expression). Possible
         values are 'fail', 'copy_to_all' or anything else. The default is
@@ -89,30 +88,30 @@ class RPMStore(ArtifactStore):
         rpms with a defined distro). If anything else specified, it will warn
         and skip that rpm.
 
-      path_prefix
+    * path_prefix
         Prefixes of this store inside the globl artifact repository, separated
         by commas
 
-      rpm_dir
+    * rpm_dir
         name of the directory that will contain the rpms (rpm by default), if
         empty, it will not create a subdirectory for the rpms and will be put
         on the root of the repo (root/$dist/$arch/*rpm)
 
-      signing_key
+    * signing_key
         Path to the gpg keey to sign the rpms with, will not sign them if not
         set
 
-      signing_passphrase
+    * signing_passphrase
         Passphrase for the above key
 
-      temp_dir
+    * temp_dir
         Temporary dir to store any transient downloads (like rpms from
         urls). The caller should make sure it exists and clean it up if needed.
 
-      with_sources
+    * with_sources
         If true, will extract the sources form the scrrpms
 
-      with_srcrpms
+    * with_srcrpms
         If false, will ignore the srcrpms
         will be relative to the store root path.
     """
@@ -296,6 +295,7 @@ class RPMStore(ArtifactStore):
     def generate_sources(self, with_patches=False, key=None, passphrase=None):
         """
         Generate the sources directory from all the srcrpms
+
         :param with_patches: If set, will also extract the .patch files from
             the srcrpm
         :param key: If set to the path of a gpg key, will use that key to
@@ -353,6 +353,7 @@ class RPMStore(ArtifactStore):
     def delete_old(self, keep=1, noop=False):
         """
         Delete the oldest versions for each package from the repo
+
         :param keep: Maximium number of versions to keep of each package
         :param noop: If set, will only log what will be done, not actually
             doing anything.

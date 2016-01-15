@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """
-When specifying a source for an artifact, you have to do it in this format:
+When specifying a source for an artifact, you have to do it in this format::
 
-source_type:value[:filter[:filter[...]]]
+    source_type:value[:filter[:filter[...]]]
 
-For each source, it will be expanded, and filtered. An example:
+For each source, it will be expanded, and filtered. An example::
 
-repo:master-nightly:name~ovirt-engine.*:latest=2
+    repo:master-nightly:name~ovirt-engine.*:latest=2
 
 """
 import logging

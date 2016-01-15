@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
-source:only-missing
+Usage::
+
+    source:only-missing
 
 Gets only the artifacts that are not already there, getting only the ones
 that don't have already an artifact with the same name in the repo.

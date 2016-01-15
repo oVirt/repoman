@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
-source:name~regexp
+Usage::
 
-Filter packges by file name, for example:
+    source:name~regexp
 
-http://myhost.com/packages/:name~vdsm.*
+Filter packges by file name, for example::
+
+    http://myhost.com/packages/:name~vdsm.*
 
 Will match all the packages in that url that have vdsm.* as name (will not
 match any previous path in the url)

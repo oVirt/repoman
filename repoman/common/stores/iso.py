@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 # encoding:utf-8
 """
-This module holds the class and methods to manage an iso store.
+This module holds the class and methods to manage an iso store::
 
-repository_dir
-└── iso
-    ├── $project1
-    │   │   ├── $version
-    │   │   |   ├── $iso1
-    │   |   │   ├── $iso1.md5sum
-    │   │   |   └── $iso1.md5sum.sig
-    │   │   └── ...
-    │   └── ...
-    └── ...
+    repository_dir
+    └── iso
+        ├── $project1
+        │   │   ├── $version
+        │   │   |   ├── $iso1
+        │   |   │   ├── $iso1.md5sum
+        │   │   |   └── $iso1.md5sum.sig
+        │   │   └── ...
+        │   └── ...
+        └── ...
 """
 import os
 import re
@@ -88,19 +88,19 @@ class IsoStore(ArtifactStore):
 
     Configuration options:
 
-      temp_dir
+    * temp_dir
         Temporary dir to store any transient downloads (like isos from
         urls). The caller should make sure it exists and clean it up if needed.
 
-      path_prefix
+    * path_prefix
         Prefixes of this store inside the globl artifact repository, separated
         by commas
 
-      signing_key
+    * signing_key
         Path to the gpg keey to sign the isos with, will not sign them if not
         set
 
-      signing_passphrase
+    * signing_passphrase
         Passphrase for the above key
     """
 
@@ -208,7 +208,8 @@ class IsoStore(ArtifactStore):
     def is_latest_version(self, iso):
         """
         Check if the given iso is the latest version in the repo
-        :pram iso: ISO instance of the package to compare
+
+        :param iso: ISO instance of the package to compare
         """
         verlist = self.artifacts.get(iso.full_name, {})
         if not verlist or iso.version in verlist.get_latest():
@@ -218,6 +219,7 @@ class IsoStore(ArtifactStore):
     def delete_old(self, keep=1, noop=False):
         """
         Delete the oldest versions for each package from the repo
+
         :param keep: Maximium number of versions to keep of each package
         :param noop: If set, will only log what will be done, not actually
             doing anything.
@@ -240,6 +242,7 @@ class IsoStore(ArtifactStore):
     def get_artifacts(self, regmatch=None, fmatch=None):
         """
         Get the list of isos, filtered or not.
+
         :param regmatch: Regular expression that will be applied to the path of
             each package to filter it
         :param fmatch: Filter function that must return True for a package to
@@ -252,6 +255,7 @@ class IsoStore(ArtifactStore):
     def get_latest(self, regmatch=None, fmatch=None, num=1):
         """
         Return the num latest versions for each iso in the repo
+
         :param num: number of latest versions to return
         """
         return self.artifacts.get_artifacts(

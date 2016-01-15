@@ -1,29 +1,29 @@
 #!/usr/bin/env python%
 # encoding: utf-8
 """
-This module holds the helper classes to represent an artifact list
+This module holds the helper classes to represent an artifact list::
 
-Base_dir
-└── $name
-    └── $version
-        ├── $name-$version.$extension
-        └── $name-$version.$extension.sig
+    Base_dir
+    └── $name
+        └── $version
+            ├── $name-$version.$extension
+            └── $name-$version.$extension.sig
 
 This module has the classess that manage a set of artifacts, in a hierarchical
-fashion, in the order:
+fashion, in the order::
 
     name 1-* version 1-* inode 1-* artifact-instance
 
 So that translated to classes, with the first being the placeholder for the
-whole data structure, is:
+whole data structure, is::
 
-    ArtifactList 1-* ArtifactName 1-* ArtifactVersion \
+    ArtifactList 1-* ArtifactName 1-* ArtifactVersion \\
     1-* ArtifactInode 1-* Artifact
 
 All except the Artifact class are implemented as subclasses of the python dict,
 so as key-value stores.
 
-For clarification, here's a dictionary like diagram:
+For clarification, here's a dictionary like diagram::
 
     ArtifactList{
         name1: ArtifactName{
@@ -36,7 +36,7 @@ For clarification, here's a dictionary like diagram:
         name2: ArtifactName{...}
     }
 
-NOTE:You have to implement at least the Artifact class
+**NOTE**:You have to implement at least the Artifact class
 """
 import os
 import hashlib
@@ -331,6 +331,7 @@ class ArtifactList(dict, object):
     def get_artifacts(self, regmatch=None, fmatch=None, latest=0):
         """
         Gets the list of artifacts, filtered or not.
+
         :param regmatch: Regular expression to filter the rpms path with
         :param fmatch: Filter function, must return True for packages to be
             included, or False to be excluded. The package object will be

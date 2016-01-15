@@ -2,34 +2,34 @@
 # encoding: utf-8
 """
 This module holds the helper classes to represent a repository, that in our
-case (oVirt) is a set of repositories, in the form:
+case (oVirt) is a set of repositories, in the form::
 
-Base_dir
-├── rpm
-│   └── $dist
-│       ├── repodata
-│       ├── SRPMS
-│       └── $arch
-└── src
-    └── $name
-        ├── $name-$version-src.tar.gz
-        └── $name-$version-src.tar.gz.sig
+    Base_dir
+    ├── rpm
+    │   └── $dist
+    │       ├── repodata
+    │       ├── SRPMS
+    │       └── $arch
+    └── src
+        └── $name
+            ├── $name-$version-src.tar.gz
+            └── $name-$version-src.tar.gz.sig
 
 
 This module has the classess that manage a set of rpms, ina hierarchical
-fashion, in the order:
+fashion, in the order::
 
     name 1-* version 1-* inode 1-* rpm-instance
 
 So that translated to classes, with the first being the placeholder for the
-whole data structure, is:
+whole data structure, is::
 
     RPMList 1-* RPMName 1-* RPMVersion 1-* RPMInode 1-* RPM
 
 All except the RPM class are implemented as subclasses of the python dict, so
 as key-value stores.
 
-For clarification, here's a dictionary like diagram:
+For clarification, here's a dictionary like diagram::
 
     RPMList{
         name1: RPMName{

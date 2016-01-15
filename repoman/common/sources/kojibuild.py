@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """
+Usage::
 
-koji:name@tag
-koji:@tag[@inherit]
-koji:name-version-release
+    koji:name@tag
+    koji:@tag[@inherit]
+    koji:name-version-release
 
 Handles koji builds
 """

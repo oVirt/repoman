@@ -280,6 +280,7 @@ def copy(what, where):
 def extract_sources(rpm_path, dst_dir, with_patches=False):
     """
     Extract the source files fro  a srcrpm, uses rpm2cpio
+
     :param rpm_path: Path to the srcrpm
     :param dst_dir: Destination directory to hold the sources, will create it
         if it does not exist
@@ -354,6 +355,7 @@ def sign_file(gpg, fname, keyid, passphrase, detach=True):
 def sign_detached(src_dir, key, passphrase=None):
     """
     Create the detached signatures for the files in the specified dir.
+
     :param src_dir: File to sign or directory with files to sign (recursively)
     :param key: Key to sign the sources with
     :param passphrase: Passphrase for the given key
@@ -398,6 +400,7 @@ def save_file(src_path, dst_path):
     """
     Save a file to a specific new path if not there already. Will create the
     path tree if it does not exist already.
+
     :param src_path: Source path for the package
     :param dst_path: New path to save the package to
     """

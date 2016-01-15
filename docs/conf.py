@@ -41,7 +41,6 @@ autodoc_mock_imports = [
 
 autodoc_default_flags = [
     'members',
-    'private-members',
     'show-inheritance',
     'undoc-members',
 ]

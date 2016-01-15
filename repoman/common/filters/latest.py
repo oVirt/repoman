@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 """
-source:latest
-source:latest=N
+Usage::
+
+    source:latest
+    source:latest=N
 
 Get's the latest N rpms (1 by default)
 """

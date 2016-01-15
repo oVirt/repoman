@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """
-dir_path
-file_path
-dir:repo_name
+Usage::
+
+    dir_path
+    file_path
+    dir:repo_name
 
 Will find all the matching artifacts under the specified dir or the given
 file.
@@ -11,10 +13,10 @@ value
 
 Configuration values:
 
-    allowed_dir_paths
-        Comma separated list of paths or empty string.
-        If set, will not allow using any path/dir/repo from outside of those
-        paths.
+  * allowed_dir_paths
+      Comma separated list of paths or empty string.
+      If set, will not allow using any path/dir/repo from outside of those
+      paths.
 
 """
 import os

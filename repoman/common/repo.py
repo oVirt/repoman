@@ -4,14 +4,13 @@
 This module holds the class and methods to manage a repository.
 
 In our case a repository is not just a yum repository but a set of them and
-another files, in the following structure:
+another files, in the following structure::
 
-
-repository_dir
-├── store1_dir
-│   └── ...
-└── store2_dir
-    └── ...
+    repository_dir
+    ├── store1_dir
+    │   └── ...
+    └── store2_dir
+        └── ...
 """
 import logging
 import os
@@ -44,8 +43,8 @@ class Repo(object):
 
     Configuration options:
 
-    alowed_repo_paths
-      Comma separated list of paths where repositories can be found/created
+    * allowed_repo_paths
+        Comma separated list of paths where repositories can be found/created
     """
     def __init__(self, path, config):
         """
@@ -90,6 +89,7 @@ class Repo(object):
     def add_source(self, artifact_source):
         """
         Generic function to add an artifact to the repo.
+
         :param artifact_source: source string of the artifact to add
         """
         # Handle the special case of a config file, a metasource (source of

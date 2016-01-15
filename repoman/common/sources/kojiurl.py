@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 """
-https?://${koji_host}/*
+Usage::
+
+    https?://${koji_host}/*
 
 Handles koji build urls
-TODO: Improve the second level detections (now filtering buildArch and
-      buildSRPM
-links only)
+
+**TODO**: Improve the second level detections (now filtering buildArch and
+    buildSRPM links only)
 """
 import logging
 import re

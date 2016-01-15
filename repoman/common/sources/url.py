@@ -2,8 +2,10 @@
 """
 Parse a url, recursively or not.
 
-URL -> Will parse the url and get all the packages in that page
-rec:URL -> Will parse the urls recursively
+Usage::
+
+    URL -> Will parse the url and get all the packages in that page
+    rec:URL -> Will parse the urls recursively
 """
 import logging
 import re
