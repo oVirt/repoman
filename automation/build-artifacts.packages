@@ -3,5 +3,6 @@ libffi-devel
 openssl-devel
 python-setuptools
 python-dulwich
+python-argparse
 yum
 yum-utils
