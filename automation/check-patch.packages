@@ -5,6 +5,7 @@ gnupg
 koji
 libffi-devel
 openssl-devel
+python-dulwich
 python-pbr
 python-setuptools
 python-testrepository

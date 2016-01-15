@@ -2,5 +2,6 @@ git
 libffi-devel
 openssl-devel
 python-setuptools
+python-dulwich
 yum
 yum-utils
