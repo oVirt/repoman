@@ -50,6 +50,7 @@ from ...utils import (
     save_file,
     extract_sources,
     sign_detached,
+    create_symlink,
 )
 
 
@@ -70,6 +71,13 @@ class RPMStore(ArtifactStore):
     the structure specified in the module doc when loading it, but when adding
     new rpms or generating the sources it will create the new files in that
     directory structure.
+
+    You can pass rpm properties (like version, distro, arch or major_version)
+    as python's format variables and they will be expanded at runtime for each
+    rpm using the expansion as store path, for example
+    '/myrepo/{major_version}' will create all the repository structure under
+    that path for each rpm (if you have multiple independent rpms that does not
+    make much senes though, but you get the idea)
 
     Configuration options:
 
@@ -144,6 +152,7 @@ class RPMStore(ArtifactStore):
         self.name = self.__class__.__name__
         self._path_prefix = config.get('path_prefix').split(',')
         self.path = repo_path or ('Non persistent %s' % self.name)
+        self.realized_paths = set()
         self.rpmdir = config.get('rpm_dir')
         self.to_copy = []
         self.distros = set()
@@ -164,6 +173,11 @@ class RPMStore(ArtifactStore):
     @property
     def path_prefix(self):
         return self._path_prefix
+
+    def get_store_path(self, rpm):
+        store_path = self.path.format(**rpm.__dict__)
+        self.realized_paths.add(store_path)
+        return store_path
 
     def handles_artifact(self, artifact):
         if self.config.get('with_srcrpms').lower() == 'false':
@@ -260,13 +274,19 @@ class RPMStore(ArtifactStore):
             else:
                 dst_distros = [pkg.distro]
             for distro in dst_distros:
+                pkg_path = pkg.generate_path(self.rpmdir)
                 if pkg.distro == 'all':
                     dst_path = (
-                        self.path + '/'
-                        + pkg.generate_path(self.rpmdir) % distro
+                        os.path.join(
+                            self.get_store_path(pkg),
+                            pkg_path % distro
+                        )
                     )
                 else:
-                    dst_path = self.path + '/' + pkg.generate_path(self.rpmdir)
+                    dst_path = os.path.join(
+                        self.get_store_path(pkg),
+                        pkg_path,
+                    )
                 save_file(pkg.path, dst_path)
                 pkg.path = dst_path
         if self.sign_key:
@@ -314,7 +334,7 @@ class RPMStore(ArtifactStore):
                 else:
                     continue
                 logger.info("Parsing srpm %s", pkg)
-                dst_dir = '%s/src/%s' % (self.path, pkg._name)
+                dst_dir = '%s/src/%s' % (self.get_store_path(pkg), pkg._name)
                 extract_sources(pkg.path, dst_dir, with_patches)
                 if key:
                     sign_detached(dst_dir, key, passphrase)
@@ -338,13 +358,19 @@ class RPMStore(ArtifactStore):
         procs = []
         for distro in self.distros:
             logger.info('  Creating metadata for %s', distro)
-            dst_dir = os.path.join(self.path, self.rpmdir, distro)
-            new_proc = mp.Process(
-                target=self.createrepo,
-                args=(dst_dir,),
-            )
-            new_proc.start()
-            procs.append(new_proc)
+            for path in self.realized_paths:
+                dst_dir = os.path.join(path, self.rpmdir, distro)
+                if not os.path.exists(dst_dir):
+                    logger.debug('Skipping non-existing path %s', dst_dir)
+                    continue
+
+                new_proc = mp.Process(
+                    target=self.createrepo,
+                    args=(dst_dir,),
+                )
+                new_proc.start()
+                procs.append(new_proc)
+
         for proc in procs:
             proc.join()
             if proc.exitcode != 0:
@@ -443,30 +469,17 @@ class RPMStore(ArtifactStore):
             if ':' not in symlink:
                 logger.warn('  Ignoring malformed symlink def %s', symlink)
                 continue
-            s_orig, s_link = symlink.split(':', 1)
-            if not s_orig or not s_link:
+
+            s_dest, s_link = symlink.split(':', 1)
+            if not s_dest or not s_link:
                 logger.warn('  Ignoring malformed symlink def %s', symlink)
                 continue
-            full_s_orig = os.path.join(self.path, s_orig)
-            s_link = os.path.join(self.path, s_link)
-            logger.info('  %s -> %s', s_link, s_orig)
-            if os.path.lexists(s_link):
-                logger.warn('    Path for the link already exists')
-                continue
-            if not os.path.exists(full_s_orig):
-                logger.warn('   The link points to non-existing path')
-            try:
-                os.symlink(s_orig, s_link)
-            except Exception as exc:
-                logger.error(
-                    '    Failed to create link %s -> %s',
-                    s_link,
-                    s_orig,
-                )
-                logger.error(exc)
-                continue
-            logger.info('  Done')
-        logger.info('Symlinks created')
+
+            for path in self.realized_paths:
+                try:
+                    create_symlink(path, s_dest, s_link)
+                except Exception as exc:
+                    logger.error(exc)
 
     def change_path(self, new_path):
         """

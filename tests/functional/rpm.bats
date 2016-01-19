@@ -620,6 +620,30 @@ EOC
 }
 
 
+@test "store.rpm: Use some rpm info in the repository path" {
+    local repo
+    local rpm
+    load utils
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rpms=()
+    for rpm in "${ALL_RPMS[@]}"; do
+        rpms+=("$BATS_TEST_DIRNAME/$rpm")
+    done
+    repoman_coverage \
+        -v \
+        "$repo/{major_version}.0"  \
+        add "${rpms[@]}"
+    tree "$repo"
+    for rpm in "${ALL_RPM_EXPECTED_PATHS[@]}"; do
+        maj_version="${rpm#*-}"
+        maj_version="${maj_version%%.*}"
+        expected_path="$repo/$maj_version.0/$rpm"
+        helpers.is_file "$expected_path"
+    done
+}
+
+
 @test "stores.rpm: gather coverage data" {
     helpers.run utils.gather_coverage \
     "$SUITE_NAME" \

@@ -471,3 +471,35 @@ def sanitize_file_name(file_name, replacement='_'):
         c if c in valid_chars else replacement
         for c in file_name
     )
+
+
+def create_symlink(basepath, dest, link):
+    """
+    Creates a symlink
+
+    Args:
+        basepath(str): Path to creat the simlink on
+        dest(str): Path not relative to basepath of the destination for the
+            link
+        link(str): Path relative to basepath of the link itself
+
+    Returns:
+        None
+    """
+    full_link = os.path.join(basepath, link)
+    logger.info('  %s -> %s', full_link, dest)
+    if os.path.lexists(full_link):
+        logger.warn('    Path for the link already exists')
+        return
+
+    if not os.path.exists(dest):
+        logger.warn('   The link points to non-existing path')
+    try:
+        os.symlink(dest, full_link)
+    except Exception as exc:
+        logger.error(
+            '    Failed to create link %s -> %s',
+            full_link,
+            dest,
+        )
+        raise exc

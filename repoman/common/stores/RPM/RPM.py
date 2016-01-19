@@ -120,6 +120,7 @@ class RPM(Artifact):
         self.sourcerpm = hdr[rpm.RPMTAG_SOURCERPM]
         self._name = hdr[rpm.RPMTAG_NAME]
         self._version = hdr[rpm.RPMTAG_VERSION]
+        self.major_version = self._version.split('.', 1)[0]
         self.release = hdr[rpm.RPMTAG_RELEASE]
         self.signature = hdr[rpm.RPMTAG_SIGPGP]
         self._raw_hdr = hdr
