@@ -606,7 +606,7 @@ EOC
     for rpm in "${UNSIGNED_RPMS[@]}"; do
         rpms+=("$BATS_TEST_DIRNAME/$rpm")
     done
-    repoman \
+    repoman_coverage \
         -v \
         "$repo"  \
         --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
