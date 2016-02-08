@@ -83,7 +83,8 @@ class RPM(Artifact):
             r'pywin32*',
             r'spice-qxl*',
             r'vcredist-x86*',
-            r'nsis-simple-service-plugin*'
+            r'nsis-simple-service-plugin*',
+            r'ovirt-node-ng-image-update-placeholder*',
         )
     ):
         """
