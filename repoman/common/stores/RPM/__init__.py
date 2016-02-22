@@ -312,19 +312,20 @@ class RPMStore(ArtifactStore):
             return True
         return False
 
-    def generate_sources(self, with_patches=False, key=None, passphrase=None):
-        """
-        Generate the sources directory from all the srcrpms
+    def _generate_sources_for_added_only(self, with_patches=False, key=None,
+                                         passphrase=None):
+        for pkg in self.to_copy:
+            if not pkg.is_source:
+                continue
+            logger.info("Parsing srpm %s", pkg)
+            dst_dir = '%s/src/%s' % (self.get_store_path(pkg), pkg._name)
+            extract_sources(pkg.path, dst_dir, with_patches)
+            if key:
+                sign_detached(dst_dir, key, passphrase)
+        logger.info('src dir generated')
 
-        :param with_patches: If set, will also extract the .patch files from
-            the srcrpm
-        :param key: If set to the path of a gpg key, will use that key to
-            create the detached signatures of the extracted sources
-        :param passphrase: Passphrase to unlock the key
-        """
-        logger.info('')
-        logger.info('Extracting sources')
-        logger.info("Generating src directory from srpms")
+    def _generate_sources_for_all(self, with_patches=False, key=None,
+                                  passphrase=None):
         for versions in self.artifacts.itervalues():
             for version in versions.itervalues():
                 for inode in version.itervalues():
@@ -338,6 +339,30 @@ class RPMStore(ArtifactStore):
                 extract_sources(pkg.path, dst_dir, with_patches)
                 if key:
                     sign_detached(dst_dir, key, passphrase)
+
+    def generate_sources(self, with_patches=False, key=None, passphrase=None):
+        """
+        Generate the sources directory from all the srcrpms
+
+        :param with_patches: If set, will also extract the .patch files from
+            the srcrpm
+        :param key: If set to the path of a gpg key, will use that key to
+            create the detached signatures of the extracted sources
+        :param passphrase: Passphrase to unlock the key
+        """
+        logger.info('')
+        logger.info('Extracting sources')
+        logger.info("Generating src directory from srpms")
+        if self.to_copy:
+            generate_function = self._generate_sources_for_added_only
+        else:
+            generate_function = self._generate_sources_for_all
+
+        generate_function(
+            with_patches=with_patches,
+            key=key,
+            passphrase=passphrase,
+        )
         logger.info('src dir generated')
 
     @staticmethod

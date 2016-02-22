@@ -91,6 +91,8 @@ SIGNED_SRPM_EXPECTED_PATHS=(
     rpm/fc21/SRPMS/signed_rpm-1.0-1.fc21.src.rpm
 )
 SOURCE_REPO1=fixtures/testdir1
+DUMMY_SRPM=fixtures/unsigned_rpm-1.0-1.fc21.src.rpm
+DUMMY_SRPM_NAME=unsigned_rpm
 FULL_SRPM=fixtures/kexec-tools-2.0.4-32.1.el7.src.rpm
 FULL_SRPM_NAME=kexec-tools
 FULL_SRPM_FILES=(

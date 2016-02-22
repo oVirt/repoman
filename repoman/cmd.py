@@ -216,7 +216,10 @@ def main():
             ):
                 logger.info('%s %s', header_msg, artifact.path)
             sys.exit(0)
-        logger.info('')
+        else:
+            logger.info('')
+            repo.save()
+            sys.exit(0)
     elif args.repoaction == 'generate-src':
         config.set('with_sources', 'true')
     elif args.repoaction == 'remove-old':

@@ -296,6 +296,80 @@ EOC
 }
 
 
+@test "stores.rpm: Add one srpm with src generation does not extract sources from existing artifacts" {
+    local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        add "$BATS_TEST_DIRNAME/$FULL_SRPM"
+
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        --with-sources \
+        add "$BATS_TEST_DIRNAME/$DUMMY_SRPM"
+    for gen_file in "${FULL_SRPM_FILES[@]}"; do
+        echo "Checking that $gen_file does not exist"
+        helpers.isnt_file "$repo/src/$FULL_SRPM_NAME/$gen_file"
+    done
+    echo "Checking that $repo/src/$DUMMY_SRPM_NAME was created"
+    helpers.is_dir "$repo/src/$DUMMY_SRPM_NAME"
+}
+
+
+@test "stores.rpm: generate-src extracts sources from existing artifacts" {
+    local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        add "$BATS_TEST_DIRNAME/$FULL_SRPM"
+
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
+        --passphrase "$PGP_PASS" \
+        generate-src
+    for gen_file in "${FULL_SRPM_FILES[@]}"; do
+        echo "Checking that $gen_file does not exist"
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file"
+        echo "Checking $gen_file.sig"
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file.sig"
+    done
+}
+
+
+@test "stores.rpm: generate-src extracts and signs sources from existing artifacts" {
+    local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        add "$BATS_TEST_DIRNAME/$FULL_SRPM"
+
+    repoman_coverage \
+        -v \
+        "$repo"  \
+        generate-src
+    for gen_file in "${FULL_SRPM_FILES[@]}"; do
+        echo "Checking that $gen_file does not exist"
+        helpers.is_file "$repo/src/$FULL_SRPM_NAME/$gen_file"
+    done
+}
+
+
+
 @test "stores.rpm: Create relative symlinks" {
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
