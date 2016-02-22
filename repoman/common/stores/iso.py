@@ -55,7 +55,7 @@ class Iso(Artifact):
         self._name = nv_match.groupdict().get('name')
         self._version = nv_match.groupdict().get('version')
         super(Iso, self).__init__(path=path, temp_dir=temp_dir)
-        with open(path) as fdno:
+        with open(self.path) as fdno:
             self.inode = os.fstat(fdno.fileno()).st_ino
 
     @property
@@ -145,7 +145,14 @@ class IsoStore(ArtifactStore):
         return self._path_prefix
 
     def handles_artifact(self, artifact_str):
-        return re.match(ISO_REGEX, artifact_str)
+        logger.debug('Checking if %s is an iso', artifact_str)
+        res = re.match(ISO_REGEX, artifact_str)
+        if res:
+            logger.debug('  It is')
+            return True
+        else:
+            logger.debug('  It is not')
+            return False
 
     def add_artifact(self, iso, **args):
         self.add_iso(iso, **args)
