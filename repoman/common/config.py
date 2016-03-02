@@ -150,6 +150,22 @@ class Config(object):
         ]
         return val
 
+    def getdict(self, entry, default=None):
+        val = self.get(entry, default)
+        try:
+            val = dict([
+                [item.strip() for item in elem.strip().split('=')]
+                for elem in val.replace(',', '\n').splitlines()
+                if elem.strip()
+            ])
+        except Exception:
+            raise RuntimeError(
+                'Wrongly formatted option %s, expected a dict-like string in '
+                'the form "%s = key1=val1, key2=val2..."'
+                % (entry, entry)
+            )
+        return val
+
     def get_section(self, section):
         new_config = Config(section=section)
         new_config.config = self.config

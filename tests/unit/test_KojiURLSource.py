@@ -82,6 +82,9 @@ class ConfigMock(object):
     def get(self, name):
         return name
 
+    def getdict(self, name):
+        return {}
+
 
 @pytest.fixture(params=[
     (

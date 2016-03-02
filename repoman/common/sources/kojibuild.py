@@ -26,6 +26,7 @@ class KojiBuildSource(ArtifactSource):
         'koji_server': 'https://koji.fedoraproject.org/kojihub',
         'koji_topurl': 'https://kojipkgs.fedoraproject.org/',
         'koji_skip_unavailable': 'true',
+        'koji_extra_opts': 'krbservice=host'
     }
     CONFIG_SECTION = 'KojiBuildSource'
 
@@ -47,7 +48,7 @@ class KojiBuildSource(ArtifactSource):
         logger.info('Parsing Koji build: %s', source)
         client = koji.ClientSession(
             self.config.get('koji_server'),
-            {},
+            self.config.getdict('koji_extra_opts'),
         )
         topurl = self.config.get('koji_topurl')
         if source.startswith('@'):
