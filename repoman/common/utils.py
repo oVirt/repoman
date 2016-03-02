@@ -208,11 +208,11 @@ def to_human_size(fsize):
     return '%dB' % fsize
 
 
-def download(path, dest_path, tries=3):
+def download(path, dest_path, tries=3, verify=True):
     """
     Download a package from a url.
     """
-    headers = requests.head(path)
+    headers = requests.head(path, verify=verify)
     chunk_size = 4096
     # length == 0 means that we don't know the size
     length = int(headers.headers.get('content-length', 0)) or 0
@@ -221,9 +221,9 @@ def download(path, dest_path, tries=3):
                  length and to_human_size(length) or 'unknown')
     num_dots = 100
     dot_frec = (length / num_dots) or 1
-    stream = requests.get(path, stream=True)
+    stream = requests.get(path, stream=True, verify=verify)
     while not stream and tries:
-        stream = requests.get(path, stream=True)
+        stream = requests.get(path, stream=True, verify=verify)
         tries -= 1
     if not tries:
         raise Exception(

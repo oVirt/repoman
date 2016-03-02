@@ -59,7 +59,7 @@ logger = logging.getLogger(__name__)
 class Artifact(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, path, temp_dir='/tmp'):
+    def __init__(self, path, temp_dir='/tmp', verify_ssl=True):
         """
         :param path: Path or url to the artifact
         :param temp_dir: If url specified, will use that temporary dir to store
@@ -73,7 +73,7 @@ class Artifact(object):
                                 'unable to guess package name'
                                 % path)
             fpath = temp_dir + '/' + name
-            download(path, fpath)
+            download(path, fpath, verify=verify_ssl)
             path = fpath
         self.path = path
         # will be calculated if needed

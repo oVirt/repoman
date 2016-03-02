@@ -19,6 +19,7 @@ signing_passphrase = ask
 stores = all
 filters = all
 sources = all
+verify_ssl = true
 """
 
 logger = logging.getLogger(__name__ )  # flake8: noqa

@@ -85,7 +85,8 @@ class RPM(Artifact):
             r'vcredist-x86*',
             r'nsis-simple-service-plugin*',
             r'ovirt-node-ng-image-update-placeholder*',
-        )
+        ),
+        verify_ssl=True,
     ):
         """
         :param path: Path or url to the rpm
@@ -107,7 +108,7 @@ class RPM(Artifact):
                                 'unable to guess package name'
                                 % path)
             fpath = temp_dir + '/' + name
-            download(path, fpath)
+            download(path, fpath, verify=verify_ssl)
             path = fpath
         self.path = path
         with open(path) as fdno:

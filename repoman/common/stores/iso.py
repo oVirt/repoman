@@ -45,7 +45,7 @@ class WrongIsoError(Exception):
 
 
 class Iso(Artifact):
-    def __init__(self, path, temp_dir):
+    def __init__(self, path, temp_dir, verify_ssl=True):
         nv_match = re.match(ISO_REGEX, path)
         if not nv_match:
             raise WrongIsoError(
@@ -54,7 +54,11 @@ class Iso(Artifact):
             )
         self._name = nv_match.groupdict().get('name')
         self._version = nv_match.groupdict().get('version')
-        super(Iso, self).__init__(path=path, temp_dir=temp_dir)
+        super(Iso, self).__init__(
+            path=path,
+            temp_dir=temp_dir,
+            verify_ssl=verify_ssl,
+        )
         with open(self.path) as fdno:
             self.inode = os.fstat(fdno.fileno()).st_ino
 
@@ -174,6 +178,7 @@ class IsoStore(ArtifactStore):
         iso = Iso(
             iso,
             temp_dir=self.config.get('temp_dir'),
+            verify_ssl=self.config.getboolean('verify_ssl')
         )
         if self.artifacts.add_pkg(iso, onlyifnewer):
             if to_copy:

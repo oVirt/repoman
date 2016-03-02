@@ -209,7 +209,8 @@ class RPMStore(ArtifactStore):
             pkg = RPM(
                 pkg,
                 temp_dir=self.config.get('temp_dir'),
-                distro_reg=self.config.get('distro_reg')
+                distro_reg=self.config.get('distro_reg'),
+                verify_ssl=self.config.getboolean('verify_ssl'),
             )
         except WrongDistroException:
             if self.on_wrong_distro == 'copy_to_all':
