@@ -11,10 +11,13 @@ import sys
 from getpass import getpass
 
 
-from .common.config import Config
 from .common.repo import Repo
-from .common.stores import STORES
-from .common.sources import SOURCES
+from .common import (  # noqa
+    config as config_mod,
+    filters,
+    stores,
+    sources,
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -77,7 +80,7 @@ def add_add_artifact_parser(parent_parser):
             'conf:stdin wil read the sources from stdin'
             + ', '.join(
                 ', '.join(source.formats_list())
-                for source in SOURCES.itervalues()
+                for source in sources.SOURCES.itervalues()
             )
         )
     )
@@ -92,8 +95,39 @@ def add_add_artifact_parser(parent_parser):
     return parent_parser
 
 
+def add_docs_parser(parent_parser):
+    docs_parser = parent_parser.add_parser(
+        'docs',
+        help='Show docs on sources, filters, stores or configuration',
+    )
+    subject_subparser = docs_parser.add_subparsers(dest='subject')
+    subject_parsers = {}
+    for subject in ['filters', 'sources', 'stores', 'config']:
+        subject_parsers[subject] = subject_subparser.add_parser(
+            subject,
+            help='Show info from the %s module' % subject,
+        )
+        subject_parsers[subject].add_argument(
+            'element',
+            nargs='?',
+            default=None,
+            help=(
+                'What to show info about %s, empty to show general info '
+                'about it' % subject
+            ),
+        )
+
+    return parent_parser
+
+
 def parse_args():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=(
+            'Artifact repositories manager. The "dir" argument is always '
+            ' required, so in order to see the docs, you can pass a dummy '
+            '"dir", for example "repoman shrubbery docs filters"'
+        )
+    )
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-n', '--noop', action='store_true')
     parser.add_argument(
@@ -110,9 +144,13 @@ def parse_args():
         help='Temporary directory to use, will generate it if not passed',
     )
     parser.add_argument(
-        '-s', '--stores', required=False, default=','.join(STORES.keys()),
-        help='Store classes to take into account when loading the '
-        'repo. Available ones are %s' % ', '.join(STORES.keys()))
+        '-s', '--stores', required=False,
+        default=','.join(stores.STORES.keys()),
+        help=(
+            'Store classes to take into account when loading the repo. '
+            'Available ones are %s' % ', '.join(stores.STORES.keys())
+        )
+    )
     parser.add_argument(
         'dir',
         help=(
@@ -140,6 +178,7 @@ def parse_args():
     repo_subparser = add_createrepo_parser(repo_subparser)
     repo_subparser = add_remove_old_parser(repo_subparser)
     repo_subparser = add_sign_rpms_parser(repo_subparser)
+    repo_subparser = add_docs_parser(repo_subparser)
 
     return parser.parse_args()
 
@@ -222,9 +261,9 @@ def setup_logging(verbose=False):
 
 def get_config(args):
     if args.config:
-        config = Config(path=args.config)
+        config = config_mod.Config(path=args.config)
     else:
-        config = Config()
+        config = config_mod.Config()
 
     config = handle_custom_options(args, config)
 
@@ -308,10 +347,58 @@ def do_generate_src(config, repo):
     return 0
 
 
+def do_show_docs(args):
+    if args.subject == 'config':
+        print config_mod.DEFAULT_CONFIG
+        for section in ('filters', 'sources', 'stores'):
+            subject_mod = globals()[section]
+            elements_dict = getattr(subject_mod, section.upper())
+            for element in elements_dict.values():
+                print (
+                    '\n[%s.%s]' % (section[:-1], element.CONFIG_SECTION)
+                    + '\n' + format_conf_options(element.DEFAULT_CONFIG)
+                )
+        return
+
+    subject_mod = globals()[args.subject]
+    elements_dict = getattr(
+        subject_mod,
+        args.subject.upper()
+    )
+    if not args.element:
+        print (
+            'Available %s:\n' % args.subject
+        ) + '\n'.join(
+            '  * ' + key for key in elements_dict.keys()
+        )
+    else:
+        element = getattr(
+            subject_mod,
+            args.subject.upper()
+        )[args.element]
+        print (
+            '==== %s.%s ====' % (args.subject, args.element)
+            + element.__doc__
+            + '\n    Default config options'
+            + '\n    ' + '-' * 70
+            + '\n    [%s.%s]' % (args.subject[:-1], element.CONFIG_SECTION)
+            + '\n' + format_conf_options(element.DEFAULT_CONFIG)
+            + '\n    ' + '-' * 70
+        )
+
+
+def format_conf_options(conf_dict):
+    return '\n'.join('    %s = %s' % item for item in conf_dict.iteritems())
+
+
 def main():
     args = parse_args()
 
     setup_logging(args.verbose)
+
+    if args.repoaction == 'docs':
+        do_show_docs(args)
+        return
 
     config = get_config(args)
     repo = get_repo(args, config)

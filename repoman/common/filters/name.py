@@ -17,6 +17,7 @@ from ..utils import split
 
 
 class NameFilter(ArtifactFilter):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {}
     CONFIG_SECTION = 'NameFilter'

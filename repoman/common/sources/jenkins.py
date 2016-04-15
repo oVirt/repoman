@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class JenkinsSource(ArtifactSource):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {
         'jenkins_host_re': r'jenkins\.ovirt\.org',

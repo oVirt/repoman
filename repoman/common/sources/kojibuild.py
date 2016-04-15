@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class KojiBuildSource(ArtifactSource):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {
         'koji_server': 'https://koji.fedoraproject.org/kojihub',

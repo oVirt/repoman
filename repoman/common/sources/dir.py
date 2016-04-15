@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class DirSource(ArtifactSource):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {
         'allowed_dir_paths': '',

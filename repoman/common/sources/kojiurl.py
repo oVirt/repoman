@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class KojiURLSource(ArtifactSource):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {
         'koji_host_re': r'koji\.fedoraproject\.org',

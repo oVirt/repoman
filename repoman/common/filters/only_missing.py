@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)  # pylint: noqa
 
 
 class OnlyMissingFilter(ArtifactFilter):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {}
     CONFIG_SECTION = 'OnlyMissingFilter'

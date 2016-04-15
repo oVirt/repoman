@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)  # pylint: noqa
 
 
 class LatestFilter(ArtifactFilter):
+    __doc__ = __doc__
 
     DEFAULT_CONFIG = {}
     CONFIG_SECTION = 'LatestFilter'
