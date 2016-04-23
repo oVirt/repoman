@@ -225,10 +225,10 @@ class RPMStore(ArtifactStore):
             else:
                 if self.on_wrong_distro != 'warn':
                     logger.warn(
-                        'Wrong value for store.%s.on_wrong_distro (), '
+                        'Wrong value for store.%s.on_wrong_distro (%s), '
                         'assumming "warn"',
-                        self.on_wrong_distro,
                         self.CONFIG_SECTION,
+                        self.on_wrong_distro,
                     )
                 return
         if self.artifacts.add_pkg(pkg, onlyifnewer):
