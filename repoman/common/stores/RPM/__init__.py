@@ -302,6 +302,7 @@ class RPMStore(ArtifactStore):
         self.create_symlinks()
         logger.info('')
         logger.info('Saved %s\n', self.path)
+        self.to_copy = []
 
     def is_latest_version(self, pkg):
         """
