@@ -378,7 +378,7 @@ def do_show_docs(args):
         )[args.element]
         print (
             '==== %s.%s ====' % (args.subject, args.element)
-            + element.__doc__
+            + str(element.__doc__)
             + '\n    Default config options'
             + '\n    ' + '-' * 70
             + '\n    [%s.%s]' % (args.subject[:-1], element.CONFIG_SECTION)

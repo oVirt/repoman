@@ -1,4 +1,25 @@
 #!/usr/bin/env python
+"""
+Allows you to define a jenkins build job url as a source:
+
+* If it's a build -> the artifacts archived on that build
+* If it's a job -> the artifacts from the last successful build
+* If it's a multiconfig build -> the artifacts from all the configs
+
+For example::
+    repoman myrepo add \\
+        http://jenkins.ovirt.org/jobs/lago_master_build-artifacts-el7-x86_64
+
+will get the latest successful build artifacts for that job.
+
+Keep in mind that if the url does not match the regexp in the config, you can
+still force repoman to use this source prepending the url with 'jenkins:', like
+this::
+
+    repoman myrepo add \\
+        jenkins:http://some.strange.url/to/my_job
+
+"""
 import logging
 import re
 import time
@@ -37,9 +58,13 @@ class JenkinsSource(ArtifactSource):
             or not re.match(
                 'https?://%s/' % self.config.get('jenkins_host_re'),
                 source_str,
-            )
+            ) and not source_str.startswith('jenkins:')
         ):
             return source_str, art_list
+
+        if source_str.startswith('jenkins:'):
+            source_str = source_str.split(':', 1)[1]
+
         filters_str = split(source_str, ':', 2)[-1]
         source_str = ':'.join(source_str.split(':', 2)[:2])
         tries = 3
