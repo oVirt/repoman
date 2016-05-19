@@ -90,6 +90,21 @@ class Repo(object):
         """
         Generic function to add an artifact to the repo.
 
+        Some base (meta-)sources are supported, like:
+
+        * `conf:path/to/file`: This will include all the sources defined in
+            the file `path/to/file`, it supports shell comments in the file,
+            and empty lines
+
+        * `stdin`: This will read any sources passd through stdin, with the
+            same format as conf: files (`cat sources | repoman myrepo add
+            stdin` is the same as `repoman myrepo add conf:sources`)
+
+        * `repo-suffix:suffix_string`: This allows you to define a suffix
+            string for the destination repo, it's helpful to allow generating
+            custom repos from a base one, when the repoman command is hardcoded
+            (with the combination of stdin source)
+
         :param artifact_source: source string of the artifact to add
         """
         # Handle the special case of a config file, a metasource (source of

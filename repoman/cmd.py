@@ -17,6 +17,7 @@ from .common import (  # noqa
     filters,
     stores,
     sources,
+    repo,
 )
 
 
@@ -366,8 +367,14 @@ def do_show_docs(args):
         args.subject.upper()
     )
     if not args.element:
+        if args.subject == 'sources':
+            extra_sources_doc = repo.Repo.add_source.__doc__
+            print (
+                'Meta-sources supported by add_source:\n%s' % extra_sources_doc
+            )
+
         print (
-            'Available %s:\n' % args.subject
+            '\nAvailable %s:\n' % args.subject
         ) + '\n'.join(
             '  * ' + key for key in elements_dict.keys()
         )
