@@ -8,6 +8,7 @@ Getting started
    :maxdepth: 2
 
    README
+   Tutorial
 
 Contents
 -------------
