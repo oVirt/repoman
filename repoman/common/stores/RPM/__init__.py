@@ -370,7 +370,17 @@ class RPMStore(ArtifactStore):
     @staticmethod
     def createrepo(dst_dir):
         with open(os.devnull, 'w') as devnull:
-            res = subprocess.call(['createrepo', dst_dir], stdout=devnull)
+            srpms_dir = os.path.join(dst_dir, 'SRPMS')
+            res = subprocess.call(
+                ['createrepo', '--excludes=*.src.rpm', dst_dir],
+                stdout=devnull,
+            )
+            if os.path.exists(srpms_dir):
+                res += subprocess.call(
+                    ['createrepo', srpms_dir],
+                    stdout=devnull,
+                )
+
         if res != 0:
             raise CreaterepoError(
                 "Createrepo failed on %s with rc %d" % (dst_dir, res)
