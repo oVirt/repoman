@@ -77,10 +77,12 @@ class Parser(object):
             if not art_list:
                 # if no artifacts for this source type, try next
                 continue
+
             # check if there were any filters in the source definition, finish
             # if not
             if not filters_str:
                 break
+
             # check all the filters until finished or we can't resolve any more
             # of the filters strings
             prev_filters_str = ''
@@ -98,10 +100,15 @@ class Parser(object):
                     break
             # We skip all other sources if we found the matching one
             break
+
         if not art_list:
+            empty_source_action = self.config.get('on_empty_source')
             msg = 'No artifacts found for source %s' % source_str
-            logger.error(msg)
-            raise Exception(msg)
+            if empty_source_action in ['fail', 'warn']:
+                logger.error(msg)
+            if empty_source_action == 'fail':
+                raise Exception(msg)
+
         logging.debug(
             'From source string %s got: %s',
             full_source_str,

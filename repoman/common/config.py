@@ -12,14 +12,30 @@ from .sources import SOURCES
 
 DEFAULT_CONFIG = """
 [main]
+# Comma separated list of paths where repositories can be found and/or created
 allowed_repo_paths =
+
+# Valid values are 'generate', or a path
 temp_dir = generate
+
+# Path to the signing key, if empty it will not sign
+# If the passphrase is 'ask', it will interactively prompt for it (unless
+# passed through command line)
 singing_key =
 signing_passphrase = ask
+
+# Which classes to load for each element, comma-separated list of class names
 stores = all
 filters = all
 sources = all
+
+# Sometimes you don't want to verify the ssl certs of the urls you use to fetch
+# artifacts for (don't set to false if you are not 100% sure)
 verify_ssl = true
+
+# What to do whet a source to be added has no artifacts valid values are
+# fail|warn|ignore
+on_empty_source = fail
 """
 
 logger = logging.getLogger(__name__ )  # flake8: noqa
