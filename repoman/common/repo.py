@@ -105,6 +105,11 @@ class Repo(object):
             custom repos from a base one, when the repoman command is hardcoded
             (with the combination of stdin source)
 
+        * `repo-extra-dir:dirname`: This allows you to define an extra subdir
+            string for the destination repo, it's helpful to allow generating
+            custom repos from a base one, when the repoman command is hardcoded
+            (with the combination of stdin source).
+
         :param artifact_source: source string of the artifact to add
         """
         # Handle the special case of a config file, a metasource (source of
@@ -121,6 +126,11 @@ class Repo(object):
             repo_suffix = artifact_source.split(':', 1)[-1]
             logger.info('Adding repo suffix %s', repo_suffix)
             self.add_path_suffix(suffix=repo_suffix)
+            return
+        elif artifact_source.startswith("repo-extra-dir:"):
+            repo_extra_dir = artifact_source.split(':', 1)[-1]
+            logger.info('Adding repo extra dir %s', repo_extra_dir)
+            self.add_path_extra_dir(dirname=repo_extra_dir)
             return
         logger.info('Resolving artifact source %s', artifact_source)
         artifact_paths = self.parser.parse(artifact_source)
@@ -183,3 +193,18 @@ class Repo(object):
         for store in self.stores.values():
             store.change_path(store.path + clean_suffix)
         self.path += clean_suffix
+
+    def add_path_extra_dir(self, dirname):
+        """
+        Adds an extra subdir to the curret path
+
+        Args:
+            dirname (str): Name of the extra dir to add
+
+        Returns:
+            None
+        """
+        clean_dirname = utils.sanitize_file_name(dirname)
+        for store in self.stores.values():
+            store.change_path(os.path.join(store.path, clean_dirname))
+        self.path = os.path.join(self.path, clean_dirname)
