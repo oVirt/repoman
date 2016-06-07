@@ -208,3 +208,4 @@ class Repo(object):
         for store in self.stores.values():
             store.change_path(os.path.join(store.path, clean_dirname))
         self.path = os.path.join(self.path, clean_dirname)
+        self.__init__(path=self.path, config=self.config)

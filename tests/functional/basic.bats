@@ -256,10 +256,11 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
         -v \
         "$repo" \
             add \
-            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
-            'repo-extra-dir:my_extra_/dummy/&^subdir'
+            'repo-extra-dir:my_extra_/dummy/&^subdir' \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}"
     echo "$output"
     helpers.is_dir "$repo_with_subdir"
+    tree "$repo_with_subdir"
     helpers.is_file "$repo_with_subdir/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
 }
 
@@ -282,13 +283,15 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
         -v \
         "$repo" \
             add \
-            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
-            'repo-extra-dir:my_extra_/dummy/&^subdir'
+            'repo-extra-dir:my_extra_/dummy/&^subdir' \
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}"
     echo "$output"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.isnt_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
     helpers.is_dir "$repo_with_subdir"
-    helpers.is_file "$repo_with_subdir/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
+    tree "$repo_with_subdir"
+    helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
+    helpers.isnt_file "$repo_with_subdir/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo_with_subdir/${UNSIGNED_RPM_EXPECTED_PATHS[1]}"
 }
 
