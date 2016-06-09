@@ -16,6 +16,7 @@ import logging
 import os
 import shutil
 import sys
+from functools import wraps
 
 import tempfile
 import atexit
@@ -32,6 +33,15 @@ def cleanup(temp_dir):
     if os.path.isdir(temp_dir):
         shutil.rmtree(temp_dir)
         logger.info('Cleaning up temporary dir %s', temp_dir)
+
+
+def loaded(func):
+    @wraps(func)
+    def _func(self, *args, **kwargs):
+        self.load()
+        return func(self, *args, **kwargs)
+
+    return _func
 
 
 class Repo(object):
@@ -55,6 +65,9 @@ class Repo(object):
         """
         self.path = os.path.abspath(path)
         self.config = config
+        self.added_artifacts = []
+        self.loaded = False
+        self.parser = None
         logger.debug(config)
         for allowed_path in self.config.getarray('allowed_repo_paths'):
             if self.path.startswith(allowed_path):
@@ -64,6 +77,20 @@ class Repo(object):
                 raise Exception("Repo path outside allowed paths %s"
                                 % self.path)
         self.stores = config.getarray('stores')
+        temp_dir = self.config.get('temp_dir')
+        if temp_dir == 'generate':
+            temp_dir = tempfile.mkdtemp()
+            atexit.register(cleanup, temp_dir)
+            self.config.set('temp_dir', temp_dir)
+
+    def load(self):
+        """
+        Actually load all the stores and load the contents of the repo
+        """
+        if self.loaded:
+            return
+
+        logger.debug('Loading repo %s', self.path)
         self.stores = dict([
             (
                 key,
@@ -80,11 +107,7 @@ class Repo(object):
             config=self.config,
             stores=self.stores,
         )
-        temp_dir = self.config.get('temp_dir')
-        if temp_dir == 'generate':
-            temp_dir = tempfile.mkdtemp()
-            atexit.register(cleanup, temp_dir)
-            self.config.set('temp_dir', temp_dir)
+        self.loaded = True
 
     def add_source(self, artifact_source):
         """
@@ -119,25 +142,32 @@ class Repo(object):
             if conf_path == 'stdin':
                 self.parse_source_stream(sys.stdin.readlines())
                 return
+
             with open(artifact_source.split(':', 1)[1]) as conf_file_fd:
                 self.parse_source_stream(conf_file_fd)
+
             return
+
         elif artifact_source.startswith("repo-suffix:"):
             repo_suffix = artifact_source.split(':', 1)[-1]
             logger.info('Adding repo suffix %s', repo_suffix)
             self.add_path_suffix(suffix=repo_suffix)
             return
+
         elif artifact_source.startswith("repo-extra-dir:"):
             repo_extra_dir = artifact_source.split(':', 1)[-1]
             logger.info('Adding repo extra dir %s', repo_extra_dir)
             self.add_path_extra_dir(dirname=repo_extra_dir)
             return
+
+        self.load()
         logger.info('Resolving artifact source %s', artifact_source)
         artifact_paths = self.parser.parse(artifact_source)
         for artifact_path in artifact_paths:
             for store in self.stores.itervalues():
                 if store.handles_artifact(artifact_path):
                     store.add_artifact(artifact_path)
+                    self.added_artifacts.append(artifact_path)
 
     def parse_source_stream(self, source_stream):
         """
@@ -152,6 +182,7 @@ class Repo(object):
                 continue
             self.add_source(line.strip())
 
+    @loaded
     def save(self):
         """
         Realize all the changes made so far
@@ -159,6 +190,7 @@ class Repo(object):
         for store in self.stores.itervalues():
             store.save()
 
+    @loaded
     def delete_old(self, num_to_keep=1, noop=False):
         """
         Remove any old versions but the latest `num_to_keep`
@@ -205,7 +237,27 @@ class Repo(object):
             None
         """
         clean_dirname = utils.sanitize_file_name(dirname)
-        for store in self.stores.values():
-            store.change_path(os.path.join(store.path, clean_dirname))
-        self.path = os.path.join(self.path, clean_dirname)
-        self.__init__(path=self.path, config=self.config)
+        self.rebase(new_path=os.path.join(self.path, clean_dirname))
+
+    def rebase(self, new_path):
+        """
+        Changes the root path of the repo
+
+        Args:
+            new_path (str): New path to root the repo to
+
+        Returns:
+            None
+        """
+        logger.debug('Rebasing repo %s to %s', self.path, new_path)
+        previously_added_artifacts = self.added_artifacts
+        self.__init__(path=new_path, config=self.config)
+        self.added_artifacts = previously_added_artifacts
+        if self.added_artifacts:
+            self.load()
+
+        for added_artifact in self.added_artifacts:
+            for store in self.stores.itervalues():
+                if store.handles_artifact(added_artifact):
+                    logger.debug('Readding artifact %s', added_artifact)
+                    store.add_artifact(added_artifact)

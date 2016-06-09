@@ -255,9 +255,10 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
     repoman_coverage \
         -v \
         "$repo" \
+            -v \
             add \
-            'repo-extra-dir:my_extra_/dummy/&^subdir' \
-            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}"
+            "$BATS_TEST_DIRNAME/${UNSIGNED_RPMS[1]}" \
+            'repo-extra-dir:my_extra_/dummy/&^subdir'
     echo "$output"
     helpers.is_dir "$repo_with_subdir"
     tree "$repo_with_subdir"
