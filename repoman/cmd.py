@@ -7,6 +7,7 @@ different types of artifacts
 """
 import argparse
 import logging
+import os
 import sys
 from getpass import getpass
 
@@ -173,6 +174,14 @@ def parse_args():
         '--with-sources', required=False, action='store_true',
         help='Generate the sources tree.'
     )
+    parser.add_argument(
+        '--create-latest-repo', action='store_true',
+        help=(
+            'If set, will create a repo named "latest" in the same root dir '
+            'as the given repo with the latest artifacts of all the repos in '
+            'that root. Useful when combined with repo-extra-dir meta-sources.'
+        ),
+    )
     repo_subparser = parser.add_subparsers(dest='repoaction')
     repo_subparser = add_add_artifact_parser(repo_subparser)
     repo_subparser = add_generate_src_parser(repo_subparser)
@@ -293,8 +302,14 @@ def get_repo(args, config):
     else:
         path = args.dir
 
-    repo = Repo(path=path, config=config)
-    return repo
+    return Repo(path=path, config=config)
+
+
+def get_latest_repo(args, config, base_repo):
+    return Repo(
+        path=os.path.join(os.path.dirname(base_repo.path), 'latest'),
+        config=config,
+    )
 
 
 def do_add(args, config, repo):
@@ -322,6 +337,14 @@ def do_add(args, config, repo):
         LOGGER.info('')
 
     repo.save()
+
+    if args.create_latest_repo:
+        root_dir = os.path.dirname(repo.path)
+        latest_repo = get_latest_repo(args, config, base_repo=repo)
+        latest_repo.add_source('%s:latest' % root_dir)
+        latest_repo.save()
+        latest_repo.delete_old(num_to_keep=1)
+
     return 0
 
 

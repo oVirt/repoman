@@ -222,8 +222,10 @@ class Repo(object):
             None
         """
         clean_suffix = utils.sanitize_file_name(suffix)
-        for store in self.stores.values():
-            store.change_path(store.path + clean_suffix)
+        if self.loaded:
+            for store in self.stores.values():
+                store.change_path(store.path + clean_suffix)
+
         self.path += clean_suffix
 
     def add_path_extra_dir(self, dirname):
