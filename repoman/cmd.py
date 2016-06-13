@@ -71,10 +71,6 @@ def add_sign_rpms_parser(parent_parser):
 def add_add_artifact_parser(parent_parser):
     add_artifact = parent_parser.add_parser('add', help='Add an artifact')
     add_artifact.add_argument(
-        '-t', '--temp-dir', action='store', default=None,
-        help='Temporary dir to use when downloading artifacts'
-    )
-    add_artifact.add_argument(
         'artifact_source', nargs='*',
         help=(
             'An artifact source to add, it can be one of: '

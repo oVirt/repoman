@@ -80,8 +80,15 @@ class Repo(object):
         temp_dir = self.config.get('temp_dir')
         if temp_dir == 'generate':
             temp_dir = tempfile.mkdtemp()
-            atexit.register(cleanup, temp_dir)
-            self.config.set('temp_dir', temp_dir)
+        else:
+            if not os.path.exists(temp_dir):
+                os.makedirs(temp_dir)
+                atexit.register(cleanup, temp_dir)
+
+            temp_dir = tempfile.mkdtemp(dir=temp_dir)
+
+        atexit.register(cleanup, temp_dir)
+        self.config.set('temp_dir', temp_dir)
 
     def load(self):
         """
