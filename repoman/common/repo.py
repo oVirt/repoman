@@ -80,10 +80,13 @@ class Repo(object):
         temp_dir = self.config.get('temp_dir')
         if temp_dir == 'generate':
             temp_dir = tempfile.mkdtemp()
+
         else:
+            if temp_dir == 'generate-in-repo':
+                temp_dir = os.path.join(self.path, '.lago_tmp')
+
             if not os.path.exists(temp_dir):
                 os.makedirs(temp_dir)
-                atexit.register(cleanup, temp_dir)
 
             temp_dir = tempfile.mkdtemp(dir=temp_dir)
 

@@ -139,7 +139,11 @@ def parse_args():
     )
     parser.add_argument(
         '-t', '--temp-dir', action='store', default=None,
-        help='Temporary directory to use, will generate it if not passed',
+        help=(
+            'Temporary directory to use, will generate it if not passed. '
+            'Valid values are: "generate" (default), "generate-in-repo", or '
+            'a path '
+        ),
     )
     parser.add_argument(
         '-s', '--stores', required=False,
