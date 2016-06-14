@@ -214,6 +214,10 @@ class RPMStore(ArtifactStore):
             )
         except WrongDistroException:
             if self.on_wrong_distro == 'copy_to_all':
+                logging.info(
+                    'Malformed release string on %s, will copy to all distros',
+                    pkg,
+                )
                 pkg = RPM(
                     pkg,
                     temp_dir=self.config.get('temp_dir'),
@@ -230,6 +234,8 @@ class RPMStore(ArtifactStore):
                         self.CONFIG_SECTION,
                         self.on_wrong_distro,
                     )
+
+                logging.warn('Malformed release string on %s, skipping', pkg)
                 return
         if self.artifacts.add_pkg(pkg, onlyifnewer):
             if to_copy:

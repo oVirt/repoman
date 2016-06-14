@@ -136,11 +136,7 @@ class RPM(Artifact):
         )):
             self.distro = 'all'
         else:
-            try:
-                self.distro = self.get_distro(self.release, distro_reg)
-            except WrongDistroException:
-                logging.error('Malformed release string on %s', path)
-                raise
+            self.distro = self.get_distro(self.release, distro_reg)
         self.arch = hdr[rpm.RPMTAG_ARCH] or 'none'
         # this property should uniquely identify a rpm entity, in the sense
         # that if you have two rpms with the same full_name they must package
