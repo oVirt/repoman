@@ -297,6 +297,36 @@ BASE_RPM_EXPECTED_PATH=custom_name/fc21/x86_64/unsigned_rpm-1.0-1.fc21.x86_64.rp
 }
 
 
+@test "basic.createrepo: Regenerate the repo metadata" {
+    local repo \
+        conf
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    rm -rf "$repo"
+    echo -e \
+        "$BATS_TEST_DIRNAME/${SIGNED_RPMS[0]}" \
+    | repoman_coverage \
+        -v \
+        "$repo" \
+            add \
+            conf:stdin
+    echo "$output"
+    metadata_dir="$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
+    metadata_dir="${metadata_dir%/*/*}/repodata"
+    helpers.is_dir "$metadata_dir"
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
+    rm -rf "$metadata_dir"
+    repoman_coverage \
+        -v \
+        "$repo" \
+            createrepo
+    echo "$output"
+    tree "$repo"
+    helpers.is_dir "$metadata_dir"
+    helpers.is_file "$repo/${SIGNED_RPM_EXPECTED_PATHS[0]}"
+}
+
+
 @test "basic: gather coverage data" {
     helpers.run utils.gather_coverage \
     "$SUITE_NAME" \

@@ -174,8 +174,8 @@ class RPMStore(ArtifactStore):
     def path_prefix(self):
         return self._path_prefix
 
-    def get_store_path(self, rpm):
-        store_path = self.path.format(**rpm.__dict__)
+    def get_store_path(self, pkg):
+        store_path = self.path.format(**pkg.__dict__)
         self.realized_paths.add(store_path)
         return store_path
 
@@ -240,6 +240,9 @@ class RPMStore(ArtifactStore):
         if self.artifacts.add_pkg(pkg, onlyifnewer):
             if to_copy:
                 self.to_copy.append(pkg)
+            else:
+                store_path = self.path.format(**pkg.__dict__)
+                self.realized_paths.add(store_path)
             if not hidelog:
                 logger.info(
                     'Adding package %s to repo %s', pkg.path, self.path,

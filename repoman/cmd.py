@@ -59,10 +59,14 @@ def add_remove_old_parser(parent_parser):
     return parent_parser
 
 
-def add_sign_rpms_parser(parent_parser):
+def add_sign_artifacts_parser(parent_parser):
     parent_parser.add_parser(
         'sign-rpms',
-        help='Sign all the packages.'
+        help='Sign all the artifacts.'
+    )
+    parent_parser.add_parser(
+        'sign-artifacts',
+        help='Sign all the artifacts.'
     )
 
     return parent_parser
@@ -187,7 +191,7 @@ def parse_args():
     repo_subparser = add_generate_src_parser(repo_subparser)
     repo_subparser = add_createrepo_parser(repo_subparser)
     repo_subparser = add_remove_old_parser(repo_subparser)
-    repo_subparser = add_sign_rpms_parser(repo_subparser)
+    repo_subparser = add_sign_artifacts_parser(repo_subparser)
     repo_subparser = add_docs_parser(repo_subparser)
 
     return parser.parse_args()
@@ -310,6 +314,18 @@ def get_latest_repo(args, config, base_repo):
         path=os.path.join(os.path.dirname(base_repo.path), 'latest'),
         config=config,
     )
+
+
+def do_createrepo(repo):
+    LOGGER.info('Regenrating repo metadata for %s', repo.path)
+    repo.save()
+    return 0
+
+
+def do_sign_artifacts(repo):
+    LOGGER.info('Signing all the artifacts at %s', repo.path)
+    repo.save()
+    return 0
 
 
 def do_add(args, config, repo):
@@ -441,5 +457,9 @@ def main():
         exit_code = do_generate_src(config, repo)
     elif args.repoaction == 'remove-old':
         exit_code = do_remove_old(args, config, repo)
+    elif args.repoaction == 'createrepo':
+        exit_code = do_createrepo(repo)
+    elif args.repoaction in ['sign-rpms', 'sign-artifacts']:
+        exit_code = do_sign_artifacts(repo)
 
     sys.exit(exit_code)

@@ -255,6 +255,62 @@ EOC
 }
 
 
+@test "stores.rpm: Add an unsigned srpm, and sign with sign-rpms" {
+    local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    for ((i=0; i<${#UNSIGNED_SRPMS[@]}; i++)); do
+        rpm_file="${UNSIGNED_SRPMS[$i]}"
+        rpm_expected_path="${UNSIGNED_SRPM_EXPECTED_PATHS[$i]}"
+        rm -rf "$repo"
+        rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+        repoman_coverage \
+            -v \
+            "$repo"  \
+            add "$BATS_TEST_DIRNAME/$rpm_file"
+        helpers.run rpm -qpi "$repo/$rpm_expected_path"
+        helpers.equals "$status" "0"
+        repoman_coverage \
+            -v \
+            --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
+            --passphrase "$PGP_PASS" \
+            "$repo"  \
+            sign-rpms
+        helpers.run rpm -qpi "$repo/$rpm_expected_path"
+        helpers.equals "$status" "0"
+        helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
+    done
+}
+
+
+@test "stores.rpm: Add an unsigned srpm, and sign with sign-artifacts" {
+    local repo
+    export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
+    repo="$BATS_TMPDIR/myrepo"
+    for ((i=0; i<${#UNSIGNED_SRPMS[@]}; i++)); do
+        rpm_file="${UNSIGNED_SRPMS[$i]}"
+        rpm_expected_path="${UNSIGNED_SRPM_EXPECTED_PATHS[$i]}"
+        rm -rf "$repo"
+        rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
+        repoman_coverage \
+            -v \
+            "$repo"  \
+            add "$BATS_TEST_DIRNAME/$rpm_file"
+        helpers.run rpm -qpi "$repo/$rpm_expected_path"
+        helpers.equals "$status" "0"
+        repoman_coverage \
+            -v \
+            --key "$BATS_TEST_DIRNAME/$PGP_KEY" \
+            --passphrase "$PGP_PASS" \
+            "$repo"  \
+            sign-artifacts
+        helpers.run rpm -qpi "$repo/$rpm_expected_path"
+        helpers.equals "$status" "0"
+        helpers.contains "$output" "^.*Key ID $PGP_ID.*\$"
+    done
+}
+
+
 @test "stores.rpm: Add and sign one srpm with src generation" {
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
