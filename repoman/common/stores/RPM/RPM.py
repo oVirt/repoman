@@ -136,7 +136,15 @@ class RPM(Artifact):
         )):
             self.distro = 'all'
         else:
-            self.distro = self.get_distro(self.release, distro_reg)
+            try:
+                self.distro = self.get_distro(self.release, distro_reg)
+            except WrongDistroException as e:
+                logging.error(
+                    'Wrong distribution for package: %s-%s',
+                    self._name,
+                    self._version
+                )
+                raise e
         self.arch = hdr[rpm.RPMTAG_ARCH] or 'none'
         # this property should uniquely identify a rpm entity, in the sense
         # that if you have two rpms with the same full_name they must package
