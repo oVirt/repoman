@@ -257,7 +257,7 @@ class RPM(Artifact):
             child.sendline(passwd)
             logging.debug('Sent pass to rpmsign, try number %d', tries)
             try:
-                child.expect(pexpect.EOF, timeout=0.1)
+                child.expect(pexpect.EOF, timeout=10)
                 done = True
             except pexpect.TIMEOUT as exc:
                 tries += 1
