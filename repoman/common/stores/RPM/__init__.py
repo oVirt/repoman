@@ -182,8 +182,8 @@ class RPMStore(ArtifactStore):
     def handles_artifact(self, artifact):
         if self.config.get('with_srcrpms').lower() == 'false':
             return (
-                artifact.endswith('.rpm')
-                and not artifact.endswith('.src.rpm')
+                artifact.endswith('.rpm') and
+                not artifact.endswith('.src.rpm')
             )
         else:
             return artifact.endswith('.rpm')
@@ -378,15 +378,21 @@ class RPMStore(ArtifactStore):
 
     @staticmethod
     def createrepo(dst_dir):
+        createrepo_cmd = 'createrepo'
         with open(os.devnull, 'w') as devnull:
+            if subprocess.call(
+                ['which', 'createrepo_c'],
+                stdout=devnull,
+            ) == 0:
+                createrepo_cmd = 'createrepo_c'
             srpms_dir = os.path.join(dst_dir, 'SRPMS')
             res = subprocess.call(
-                ['createrepo', '--excludes=*.src.rpm', dst_dir],
+                [createrepo_cmd, '--excludes=*.src.rpm', dst_dir],
                 stdout=devnull,
             )
             if os.path.exists(srpms_dir):
                 res += subprocess.call(
-                    ['createrepo', srpms_dir],
+                    [createrepo_cmd, srpms_dir],
                     stdout=devnull,
                 )
 

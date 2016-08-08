@@ -6,7 +6,7 @@ SAME_RPM_NAME=(
     'rpm-python'
     'koji'
     'python-gnupg'
-    'createrepo'
+    'createrepo_c'
 )
 # If instead of automatically adding it you want to add a spec snippet yourself
 # add it here
