@@ -34,7 +34,8 @@ example::
         koji:@some-tag \
         recursive:http://my.home.page/somepath \
         http://jenkins.ovirt.org/job/repoman_master_build-artifacts-el6-x86_64/ \
-        http://koji.fedoraproject.org/koji/buildinfo?buildID=767073
+        http://koji.fedoraproject.org/koji/buildinfo?buildID=767073 \
+        https://copr.fedorainfracloud.org/coprs/msivak/ovirt-optimizer-for-ovirt-4.0/build/466823/
 
 As you can see you can specify more than one source at a time, let's take a
 small look to the ones here:
@@ -51,6 +52,9 @@ small look to the ones here:
 
 * `http://koji.fedoraproject.org/koji/buildinfo?buildID=767073`: this will
   retrieve all the artifacts for the given koji build
+
+* `https://copr.fedorainfracloud.org/coprs/msivak/ovirt-optimizer-for-ovirt-4.0/build/466823/`:
+  this will retrieve all the artifacts for the given copr build
 
 
 Filtering some of the sources
