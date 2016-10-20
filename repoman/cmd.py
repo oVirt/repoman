@@ -389,7 +389,7 @@ def do_generate_src(config, repo):
 
 def do_show_docs(args):
     if args.subject == 'config':
-        print config_mod.DEFAULT_CONFIG
+        print(config_mod.DEFAULT_CONFIG)
         for section in ('filters', 'sources', 'stores'):
             subject_mod = globals()[section]
             elements_dict = getattr(subject_mod, section.upper())

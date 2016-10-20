@@ -54,7 +54,7 @@ def update_conf_from_plugin(config, plugins, prefix):
             if not config.has_option(conf_section, opt_name):
                 config.set(conf_section, opt_name, opt_value)
             else:
-                print config.get(conf_section, opt_name)
+                print(config.get(conf_section, opt_name))
 
 
 class Config(object):
