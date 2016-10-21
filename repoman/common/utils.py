@@ -299,7 +299,7 @@ def extract_sources(rpm_path, dst_dir, with_patches=False):
     try:
         rpm2cpio = subprocess.Popen(['rpm2cpio', dst_path],
                                     stdout=subprocess.PIPE)
-        cpio_cmd = ['cpio', '-iv', '*gz', '*.zip', '*.7z']
+        cpio_cmd = ['cpio', '-iv', '*gz', '*.zip', '*.7z', '*.xz']
         if with_patches:
             cpio_cmd.append('*.patch')
         with open(os.devnull, 'w') as devnull:
