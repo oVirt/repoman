@@ -74,18 +74,7 @@ class RPM(Artifact):
         path,
         temp_dir='/tmp',
         distro_reg=r'\.(fc|el)\d+',
-        to_all_distros=(
-            r'ovirt-release\d*',
-            r'ovirt-guest-agent-windows',
-            r'ovirt-guest-tools',
-            r'py2exe*',
-            r'python-windows*',
-            r'pywin32*',
-            r'spice-qxl*',
-            r'vcredist-x86*',
-            r'nsis-simple-service-plugin*',
-            r'ovirt-node-ng-image-update-placeholder*',
-        ),
+        to_all_distros=(),
         verify_ssl=True,
     ):
         """
