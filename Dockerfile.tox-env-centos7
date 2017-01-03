@@ -1,0 +1,21 @@
+FROM centos:7
+MAINTAINER Anton Marchukov <amarchuk@redhat.com>
+LABEL description="Test and development image for repoman on CentOS 7."
+
+RUN yum -y install epel-release
+RUN yum -y install bats \
+                   createrepo \
+                   gcc \
+                   koji \
+                   libffi-devel \
+                   make \
+                   openssl-devel \
+                   python-dulwich \
+                   python-tox \
+                   rpm-sign \
+                   tree \
+                   which \
+&& yum clean all
+
+ENV HOME=/mnt
+WORKDIR /mnt
