@@ -67,6 +67,18 @@ class Iso(Artifact):
         return self._name
 
     @property
+    def full_name(self):
+        """
+        Unique ISO Name.
+
+        This property should uniquely identify an ISO entity, in the
+        sense that if you have two isos with the same full_name they must
+        package the same content or one of them is wrongly generated (the
+        version was not bumped or something).
+        """
+        return '%s(%s %s)' % (self.type, self.name, self.version)
+
+    @property
     def version(self):
         return self._version
 

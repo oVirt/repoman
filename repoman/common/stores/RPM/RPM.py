@@ -135,16 +135,6 @@ class RPM(Artifact):
                 )
                 raise e
         self.arch = hdr[rpm.RPMTAG_ARCH] or 'none'
-        # this property should uniquely identify a rpm entity, in the sense
-        # that if you have two rpms with the same full_name they must package
-        # the same content or one of them is wrongly generated (the version was
-        # not bumped or something)
-        self.full_name = 'rpm(%s %s %s %s)' % (
-            self._name,
-            self.distro,
-            self.arch,
-            self.is_source and 'src' or 'bin',
-        )
         # remove the distro from the release for the version string
         if self.distro:
             release = re.sub(
@@ -160,6 +150,21 @@ class RPM(Artifact):
     @property
     def name(self):
         return '%s.%s.%s' % (self._name, self.distro, self.arch)
+
+    @property
+    def full_name(self):
+        """
+        Unique RPM Name.
+
+        This property should uniquely identify a rpm entity, in the sense
+        that if you have two rpms with the same full_name they must package
+        the same content or one of them is wrongly generated (the version was
+        not bumped or something).
+        """
+        return 'rpm(%s %s %s %s)' % (self._name,
+                                     self.distro,
+                                     self.arch,
+                                     self.is_source and 'src' or 'bin')
 
     @property
     def version(self):

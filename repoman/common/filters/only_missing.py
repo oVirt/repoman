@@ -42,7 +42,7 @@ class OnlyMissingFilter(ArtifactFilter):
         filtered_art_names = set()
         for tmp_store in temp_stores:
             for artifact in tmp_store.get_latest(num=1):
-                if artifact.name in filtered_art_names:
+                if artifact.full_name in filtered_art_names:
                     logger.debug(
                         "Did not pass the filter, already checked: %s",
                         artifact,
@@ -50,7 +50,7 @@ class OnlyMissingFilter(ArtifactFilter):
                     continue
 
                 def same_name(art1):
-                    return art1.name == artifact.name
+                    return art1.full_name == artifact.full_name
 
                 already_in_dst_store = [
                     store.get_latest(
@@ -69,6 +69,6 @@ class OnlyMissingFilter(ArtifactFilter):
                     )
                 else:
                     filtered_art_paths.add(artifact.path)
-                    filtered_art_names.add(artifact.name)
+                    filtered_art_names.add(artifact.full_name)
                     logger.debug("Passed the filter: %s", artifact)
         return (filters_str, filtered_art_paths)

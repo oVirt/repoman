@@ -78,13 +78,6 @@ class Artifact(object):
         self.path = path
         # will be calculated if needed
         self._md5 = None
-        # this property should uniquely identify an artifact entity, in the
-        # sense that if you have two rpms with the same full_name they must
-        # package the same content or one of them is wrongly generated (the
-        # version was not bumped or something)
-        self.full_name = '%s(%s %s)' % (
-            self.type, self.name, self.version,
-        )
 
     @abstractproperty
     def version(self):
@@ -96,6 +89,18 @@ class Artifact(object):
 
     @abstractproperty
     def name(self):
+        pass
+
+    @abstractproperty
+    def full_name(self):
+        """
+        Unique Artifact Name.
+
+        This property should uniquely identify an artifact entity, in the
+        sense that if you have two artifacts with the same full_name they must
+        package the same content or one of them is wrongly generated (the
+        version was not bumped or something).
+        """
         pass
 
     @abstractproperty
