@@ -12,6 +12,9 @@ pexpect<4.0
 # Same with koji, you have to install the client
 #koji
 # koji deps
+# Pining due to https://github.com/pypa/setuptools/issues/581 
+# pyOpenSSL will pull setuptools
+setuptools<=33.1.1
 pyOpenSSL
 # Non-python dependencies
 #createrepo
