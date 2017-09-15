@@ -58,6 +58,26 @@ def gpg_get_keyuid(key_path, gpg=None):
     return keyuid
 
 
+def gpg_get_keyhex(key_path, gpg=None):
+    logger.debug('Looking the hex uid for %s', key_path)
+    gpg = gpg if gpg is not None else get_gpg()
+    fprint = gpg_load_key(key_path=key_path, gpg=gpg)
+    keyhex = None
+    for key in gpg.list_keys(True):
+        if key['fingerprint'] == fprint:
+            keyhex = key['keyid']
+    if not keyhex:
+        for key in gpg.list_keys():
+            if key['fingerprint'] == fprint:
+                keyhex = key['keyid']
+    if not keyhex:
+        raise Exception(
+            'Failed to get hex uid for key %s' % key_path
+        )
+    logger.debug('Got hex uid %s for %s', keyhex, key_path)
+    return keyhex
+
+
 def gpg_unlock(key_path, use_agent=True, passphrase=None, gpg=None):
     logger.debug('Unlocking gpg key %s' % key_path)
     gpg = gpg if gpg is not None else get_gpg(

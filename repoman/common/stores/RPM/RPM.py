@@ -49,6 +49,7 @@ import re
 
 import rpm
 import pexpect
+import subprocess
 
 from ...utils import (
     download,
@@ -146,6 +147,16 @@ class RPM(Artifact):
         else:
             release = self.release
         self.ver_rel = '%s-%s' % (self._version, release)
+        with open(os.devnull, 'w') as devnull:
+            output = subprocess.Popen(
+                ["rpm", "-qip", path],
+                stdout=subprocess.PIPE,
+                stderr=devnull,
+            ).communicate()[0]
+        match = re.search("Key ID (?P<key_id>\w+)\\n", output)
+        self.key_hex = None
+        if match:
+            self.key_hex = match.groupdict()['key_id'].upper()
 
     @property
     def name(self):
@@ -217,6 +228,22 @@ class RPM(Artifact):
         logging.info("SIGNING: %s", self.path)
         gpg = gpg_unlock(key_path, passphrase=passwd)
         keyuid = gpg_get_keyuid(key_path, gpg=gpg)
+        # Remove any existing signature from the rpm before signing it.
+        # This is needed because is a signature already exist, even whith our
+        # signature, when installing it yum raise an error like:
+        # The GPG keys listed for the "oVirt 4.2 Pre-Release" repository are
+        # already installed but they are not correct for this package.
+        logging.debug('\nrpm --delsign %s\n' % (self.path,))
+        with open(os.devnull, 'w') as devnull:
+            res = subprocess.call(
+                ['rpm', '--delsign', self.path],
+                stdout=devnull,
+            )
+            if res != 0:
+                raise Exception(
+                    "rpm --delsign failed on %s with rc %d" % (self.path, res)
+                )
+        # Signing the rpm with out key
         rpmsign_args = [
             '--resign',
             '-D', '_signature gpg',

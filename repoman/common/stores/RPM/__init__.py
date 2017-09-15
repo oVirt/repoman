@@ -51,8 +51,10 @@ from ...utils import (
     extract_sources,
     sign_detached,
     create_symlink,
+    gpg_unlock,
+    gpg_get_keyhex,
+    gpg_get_keyuid,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -502,12 +504,22 @@ class RPMStore(ArtifactStore):
         """
         Sign all the unsigned rpms in the repo.
         """
+        gpg = gpg_unlock(
+            key_path=self.sign_key,
+            passphrase=self.sign_passphrase
+        )
+        keyuid = gpg_get_keyuid(self.sign_key, gpg=gpg)
+        key_hex = gpg_get_keyhex(self.sign_key, gpg=gpg)
+        del(gpg)
         logger.info('')
-        logger.info('Signing packages')
+        logger.info('Signing packages with key: %s', self.sign_key)
+        logger.info('Signing key uid: %s', keyuid)
+        logger.info('Signing key hex: %s', key_hex)
         for pkg in self.get_rpms():
             logger.info('Got package %s', pkg)
+            logger.info('Signature: %s', pkg.key_hex)
         for pkg in self.get_rpms(
-                fmatch=lambda pkg: not pkg.signature
+            fmatch=lambda pkg: pkg.key_hex != key_hex
         ):
             pkg.sign(key_path=self.sign_key, passwd=self.sign_passphrase)
         logger.info("Done signing")
