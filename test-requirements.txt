@@ -1,6 +1,4 @@
-enum
 configparser
 pycodestyle
-flake8
 pytest
 coverage

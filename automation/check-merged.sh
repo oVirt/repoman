@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+if rpm --eval "%dist" | grep -qFi 'el6'; then
+    # On EL6 there's no python2.7
+    sed -i "s:python2.7:python2.6:" tox.ini
+fi
+
 echo "######################################################################"
 echo "#  Unit/static checks"
 echo "#"

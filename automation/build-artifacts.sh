@@ -3,10 +3,10 @@
 # array
 SAME_RPM_NAME=(
     'pyOpenSSL'
-    'rpm-python'
-    'koji'
+    'python-rpm'
     'python-gnupg'
     'createrepo_c'
+    'rpm-python'
 )
 # If instead of automatically adding it you want to add a spec snippet yourself
 # add it here
@@ -21,6 +21,27 @@ Requires: pexpect
 EXTRA_SPECS[rpm-sign]='
 %if 0%{?fedora} || 0%{?rhel} >= 7
 Requires: rpm-sign
+%endif
+'
+EXTRA_SPECS[argparse]='
+%if ( 0%{?fedora} && 0%{?fedora} <= 25 ) || 0%{?rhel} == 6
+Requires: python-argparse
+%endif
+'
+
+EXTRA_SPECS[koji]='
+%if ( 0%{?fedora} && 0%{?fedora} <= 24 ) || 0%{?rhel} == 6
+Requires: koji
+%else
+Requires: python-koji
+%endif
+'
+
+EXTRA_SPECS[cryptography]='
+%if 0%{?rhel} == 6
+Requires: python-crypto
+%else
+Requires: python-cryptography
 %endif
 '
 

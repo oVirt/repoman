@@ -98,8 +98,7 @@ class ConfigMock(object):
                 Build(
                     tag='inherited_tag',
                     packages=[Package('pkg2', 'rpm2'), Package('pkg3', 'rpm3')]
-                ),
-            ),
+                ),),
             tag='tagonly',
         ),
         False,

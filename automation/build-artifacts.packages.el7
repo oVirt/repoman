@@ -1,6 +1,7 @@
 git
 libffi-devel
 openssl-devel
+python-argparse
 python-dulwich
 python-setuptools
 yum
