@@ -70,15 +70,22 @@ artifacts that a source will expand to, that is done by appending one or more
 There it will only select the artifacts with the two highest versions from the
 `/path/to/dir/with/extra/artifacts` source, ignoring any other lower version
 ones, and only add those high version artifacts to the `/path/to/existing/repo`
-repository. You can add more than one filter to the source, and they will be
-applied from rightmost (outer) to leftmost (inner)::
+repository.
+
+You can add more than one filter to the source, and they will be
+applied from rightmost (outer) to leftmost (inner).
+
+In the below example it would first filter by name (regexp) and then by version, getting
+only the latest one (the default for the latest filter)::
 
     repoman /path/to/existing/repo add \
         /path/to/dir/with/extra/artifacts:latest:name~repoman.*
 
-The above one would first filter by name (regexp) and then by version, getting
-only the latest one (the default for the latest filter).
+To exclude packages, you can use the regex 'Negative Lookahead' format '^(?!<package>)'
+In the below example it would exclude the yum-plugin rpm::
 
+    repoman /path/to/existing/repo add \
+        /path/to/dir/with/extra/artifacts:name~^(?!yum-plugin).*\.rpm
 
 Getting the sources from a conf file
 -------------------------------------
