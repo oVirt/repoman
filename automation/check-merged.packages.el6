@@ -1,14 +1,1 @@
-bats
-createrepo_c
-git
-gnupg
-koji
-libffi-devel
-openssl-devel
-python-dulwich
-python-testrepository
-python-tox
-redhat-lsb-core
-rpm-python
-tree
-yum-utils
+check-patch.packages.el6

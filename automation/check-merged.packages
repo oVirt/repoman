@@ -1,16 +1,1 @@
-bats
-createrepo_c
-git
-gnupg
-libffi-devel
-openssl-devel
-python2-tox
-python3-tox
-python-dulwich
-python-koji
-python-rpm
-python-testrepository
-redhat-lsb-core
-rpm-sign
-tree
-yum-utils
+check-patch.packages
