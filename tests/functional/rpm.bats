@@ -60,7 +60,7 @@ SUITE_NAME=stores.rpm
     rm -rf "$BATS_TEST_DIRNAME/../../.gnupg"
     helpers.run repoman_coverage -v "$repo" add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "1"
-    helpers.contains "$output" 'Unknown distro'
+    helpers.contains "$output" 'Wrong distribution'
 }
 
 
@@ -75,7 +75,7 @@ SUITE_NAME=stores.rpm
         --option store.RPMStore.on_wrong_distro=warn \
         add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "0"
-    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Wrong distribution'
     helpers.contains "$output" 'Malformed release string'
 }
 
@@ -97,7 +97,7 @@ SUITE_NAME=stores.rpm
         add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "0"
     tree "$repo"
-    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Wrong distribution'
     ! helpers.contains "$output" 'Malformed release string'
     for expected_path in "${ALL_DISTRO_RPM_EXPECTED_PATHS[@]}"; do
         helpers.is_file "$repo/$expected_path"
@@ -120,7 +120,7 @@ SUITE_NAME=stores.rpm
             "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "0"
     tree "$repo"
-    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Wrong distribution'
     ! helpers.contains "$output" 'Malformed release string'
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[0]}"
     helpers.is_file "$repo/${UNSIGNED_RPM_EXPECTED_PATHS[2]}"
@@ -140,7 +140,7 @@ SUITE_NAME=stores.rpm
         --option store.RPMStore.on_wrong_distro=copy_to_all \
             add "$BATS_TEST_DIRNAME/$NO_DISTRO_RPM"
     helpers.equals "$status" "1"
-    ! helpers.contains "$output" 'Unknown distro'
+    ! helpers.contains "$output" 'Wrong distribution'
     ! helpers.contains "$output" 'Malformed release string'
     helpers.contains \
         "$output" \

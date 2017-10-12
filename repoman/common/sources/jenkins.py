@@ -78,17 +78,17 @@ class JenkinsSource(ArtifactSource):
                     break
                 else:
                     logger.error(response2str(lvl1_page))
-            except ValueError as exc:
+            except ValueError:
                 logger.error(response2str(lvl1_page))
             time.sleep(2)
             tries -= 1
         else:
-            logger.error(
+            raise Exception(
                 'Failed to download %s after %d tries',
                 source_str,
                 tries,
             )
-            raise exc
+
         url = lvl1_page['url']
         logger.info('Parsing jenkins URL: %s', source_str)
         if url.endswith('/'):

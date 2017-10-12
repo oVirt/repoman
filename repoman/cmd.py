@@ -335,7 +335,11 @@ def do_add(args, config, repo):
 
     LOGGER.info('Adding artifacts to the repo %s', repo.path)
     for art_src in args.artifact_source:
-        repo.add_source(art_src.strip())
+        try:
+            repo.add_source(art_src.strip())
+        except Exception:
+            LOGGER.error("Error while adding %s", art_src.strip())
+            return 1
 
     if args.keep_latest > 0:
         header_msg = 'Removed'
