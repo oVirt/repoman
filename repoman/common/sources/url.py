@@ -59,7 +59,7 @@ class URLSource(ArtifactSource):
     def expand_page(self, page_url):
         logger.info('Parsing URL: %s', page_url)
         data = requests.get(page_url).text
-        link_reg = re.compile(r'(?<=href=")[^"]+')
+        link_reg = re.compile(r'(?<=href=["\'])[^"\']+')
         art_list = set()
         for line in data.splitlines():
             links = link_reg.findall(line)

@@ -337,7 +337,8 @@ def do_add(args, config, repo):
     for art_src in args.artifact_source:
         try:
             repo.add_source(art_src.strip())
-        except Exception:
+        except Exception as e:
+            LOGGER.error(e.message)
             LOGGER.error("Error while adding %s", art_src.strip())
             return 1
 
