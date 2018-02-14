@@ -254,11 +254,16 @@ class RPM(Artifact):
         child = pexpect.spawn(
             'rpmsign',
             rpmsign_args,
-            timeout=600,  # rpmsign may take a lot of time...
+            timeout=1200,  # rpmsign may take a lot of time...
+            env={"LC_ALL": "C"},
         )
         try:
             child.expect(
-                ['pass phrase: ', 'passphrase: ', 'Passphrase: '],
+                [
+                    'pass phrase: ',
+                    'passphrase: ',
+                    'Passphrase: ',
+                ],
                 timeout=5,
             )
         except Exception as exc:
