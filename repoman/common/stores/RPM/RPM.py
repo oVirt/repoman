@@ -43,26 +43,24 @@ For clarification, here's a dictionary like diagram::
     }
 
 """
-import os
 import logging
+import os
 import re
-
-import rpm
-import pexpect
 import subprocess
 
-from ...utils import (
-    download,
-    cmpfullver,
-    gpg_unlock,
-    gpg_get_keyuid,
-)
-from ...artifact import (
-    Artifact,
-    ArtifactVersion,
-    ArtifactList,
-    ArtifactName,
-)
+import six
+
+import pexpect
+import rpm
+
+from ...artifact import Artifact
+from ...artifact import ArtifactList
+from ...artifact import ArtifactName
+from ...artifact import ArtifactVersion
+from ...utils import cmpfullver
+from ...utils import download
+from ...utils import gpg_get_keyuid
+from ...utils import gpg_unlock
 
 
 class WrongDistroException(Exception):
@@ -355,7 +353,7 @@ class RPMName(ArtifactName):
         latest = {}
         if num > len(sorted_list):
             num = len(sorted_list)
-        for pos in xrange(num):
+        for pos in six.moves.xrange(num):
             latest[sorted_list[pos]] = self.get(sorted_list[pos])
         return latest
 

@@ -6,6 +6,19 @@ if rpm --eval "%dist" | grep -qFi 'el6'; then
     sed -i "s:python2.7:python2.6:" tox.ini
 fi
 
+if rpm --eval "%dist" | grep -qFi 'el7'; then
+    # tox on el7 is too old
+    pip install --upgrade pip
+    pip install --upgrade tox
+fi
+
+mkdir -p exported-artifacts
+
+save_logs() {
+cp -pr .tox exported-artifacts/tox
+}
+
+trap save_logs EXIT
 
 echo "######################################################################"
 echo "#  Unit/static checks"

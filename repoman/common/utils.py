@@ -7,11 +7,13 @@ import shutil
 import string
 import subprocess
 import sys
+
+
 from functools import partial
 
-import requests
 import gnupg
-
+import requests
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +271,7 @@ def download(path, dest_path, tries=3, verify=True):
                 progress += len(chunk)
                 cur_percent = int(progress / dot_frec)
                 if length and cur_percent > prev_percent:
-                    for _ in xrange(cur_percent - prev_percent):
+                    for _ in six.moves.xrange(cur_percent - prev_percent):
                         sys.stdout.write('=')
                     sys.stdout.flush()
                     prev_percent = cur_percent
@@ -365,7 +367,7 @@ def sign_file(gpg, fname, keyid, passphrase, detach=True):
     if not signature.data:
         raise Exception(
             "Failed to sign file %s: \n%s",
-            file,
+            fname,
             signature.stderr
         )
     with open(fname + '.sig', 'w') as sfd:

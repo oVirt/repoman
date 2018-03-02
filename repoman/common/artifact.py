@@ -38,20 +38,19 @@ For clarification, here's a dictionary like diagram::
 
 **NOTE**:You have to implement at least the Artifact class
 """
-import os
 import hashlib
 import logging
-from abc import (
-    ABCMeta,
-    abstractproperty,
-)
+import os
 
-from .utils import (
-    download,
-    cmpfullver,
-    sign_detached,
-)
 
+from abc import ABCMeta
+from abc import abstractproperty
+
+import six
+
+from .utils import cmpfullver
+from .utils import download
+from .utils import sign_detached
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +257,7 @@ class ArtifactName(dict, object):
         latest = {}
         if num > len(sorted_list):
             num = len(sorted_list)
-        for pos in xrange(num):
+        for pos in six.moves.xrange(num):
             latest[sorted_list[pos]] = self.get(sorted_list[pos])
         return latest
 

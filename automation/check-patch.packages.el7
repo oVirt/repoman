@@ -5,9 +5,12 @@ gnupg
 koji
 libffi-devel
 openssl-devel
+pytest
 python-dulwich
 python-flake8
 python-pbr
+python-pip
+python-pycodestyle
 python-setuptools
 python-testrepository
 python-tox

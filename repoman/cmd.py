@@ -9,6 +9,7 @@ import argparse
 import logging
 import os
 import sys
+import six
 from getpass import getpass
 
 
@@ -243,7 +244,7 @@ def set_signing_key(config):
     if not config.get('signing_key', ''):
         config.set(
             'signing_key',
-            raw_input('Path to the signing key: '),
+            six.moves.input('Path to the signing key: '),
         )
 
     if (
@@ -399,7 +400,7 @@ def do_show_docs(args):
             subject_mod = globals()[section]
             elements_dict = getattr(subject_mod, section.upper())
             for element in elements_dict.values():
-                print (
+                print(
                     '\n[%s.%s]' % (section[:-1], element.CONFIG_SECTION)
                     + '\n' + format_conf_options(element.DEFAULT_CONFIG)
                 )
@@ -413,11 +414,11 @@ def do_show_docs(args):
     if not args.element:
         if args.subject == 'sources':
             extra_sources_doc = repo.Repo.add_source.__doc__
-            print (
+            print(
                 'Meta-sources supported by add_source:\n%s' % extra_sources_doc
             )
 
-        print (
+        print(
             '\nAvailable %s:\n' % args.subject
         ) + '\n'.join(
             '  * ' + key for key in elements_dict.keys()
@@ -427,7 +428,7 @@ def do_show_docs(args):
             subject_mod,
             args.subject.upper()
         )[args.element]
-        print (
+        print(
             '==== %s.%s ====' % (args.subject, args.element)
             + str(element.__doc__)
             + '\n    Default config options'

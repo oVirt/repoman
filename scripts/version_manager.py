@@ -5,10 +5,11 @@ import datetime
 import os
 import re
 import sys
+
+
 from collections import defaultdict
 
 import dulwich.repo
-
 
 BUG_URL_REG = re.compile(
     r'.*Bug-Url: https?://bugzilla.*/[^\d]*(?P<bugid>\d+)'
@@ -230,4 +231,4 @@ def main(args):
 
 if __name__ == '__main__':
 
-    print main(sys.argv[1:])
+    print(main(sys.argv[1:]))
