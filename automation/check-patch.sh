@@ -42,8 +42,8 @@ echo "#  Installation tests"
 echo "#"
 
 shopt -s extglob
-if which yum-deprecated &>/dev/null; then
-    yum-deprecated install -y exported-artifacts/!(*src).rpm
+if command -v dnf &>/dev/null; then
+    dnf install -y exported-artifacts/!(*src).rpm
 else
     yum install -y exported-artifacts/!(*src).rpm
 fi
