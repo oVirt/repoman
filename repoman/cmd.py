@@ -318,7 +318,7 @@ def get_latest_repo(args, config, base_repo):
 
 
 def do_createrepo(repo):
-    LOGGER.info('Regenrating repo metadata for %s', repo.path)
+    LOGGER.info('Regenerating repository metadata for %s', repo.path)
     repo.save()
     return 0
 
