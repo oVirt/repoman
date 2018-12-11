@@ -19,6 +19,13 @@ SUITE_NAME=stores.iso
         repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
         helpers.is_file "$repo/$expected_path"
     done
+    for ((i=0; i<"${#ISOS_WITH_DISTROS[@]}"; i++)); do
+        iso_path="${ISOS_WITH_DISTROS[$i]}"
+        expected_path="${EXPECTED_ISOS_WITH_DISTROS_PATH[$i]}"
+        rm -rf "$BATS_TMPDIR/myrepo"
+        repoman_coverage --verbose "$repo" add "$BATS_TEST_DIRNAME/$iso_path"
+        helpers.is_file "$repo/$expected_path"
+    done
 }
 
 
@@ -31,8 +38,14 @@ SUITE_NAME=stores.iso
         add "$BATS_TEST_DIRNAME/${ISOS[0]}"
     repoman_coverage --verbose "$repo" \
         add "$BATS_TEST_DIRNAME/${ISOS[1]}"
+    repoman_coverage --verbose "$repo" \
+        add "$BATS_TEST_DIRNAME/${ISOS_WITH_DISTROS[0]}"
+    repoman_coverage --verbose "$repo" \
+        add "$BATS_TEST_DIRNAME/${ISOS_WITH_DISTROS[1]}"
     helpers.is_file "$repo/${EXPECTED_ISO_PATHS[0]}"
     helpers.is_file "$repo/${EXPECTED_ISO_PATHS[1]}"
+    helpers.is_file "$repo/${EXPECTED_ISOS_WITH_DISTROS_PATH[0]}"
+    helpers.is_file "$repo/${EXPECTED_ISOS_WITH_DISTROS_PATH[1]}"
 }
 
 

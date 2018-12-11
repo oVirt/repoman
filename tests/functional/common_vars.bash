@@ -127,12 +127,28 @@ ISOS=(
     "fixtures/dummy-project-1.2.3.iso"
     "fixtures/dummy-project-1.2.4.iso"
     "fixtures/dummy-project-1.3.4.iso"
+    "fixtures/dummy-project-1.3.5.iso"
+
 )
 EXPECTED_ISO_PATHS=(
     "iso/dummy-project/1.2.3/dummy-project-1.2.3.iso"
     "iso/dummy-project/1.2.4/dummy-project-1.2.4.iso"
     "iso/dummy-project/1.3.4/dummy-project-1.3.4.iso"
+    "iso/dummy-project/1.3.5/dummy-project-1.3.5.iso"
 )
+
+ISOS_WITH_DISTROS=(
+    "fixtures/dummy-project-1.3.5-20181203.fc29.iso"
+    "fixtures/dummy-project-4.3.0-2018123114.el7.iso"
+    "fixtures/dummy-project-4.3.0-2019010101.fc28.iso"
+)
+
+EXPECTED_ISOS_WITH_DISTROS_PATH=(
+    "iso/dummy-project/1.3.5-20181203/fc29/dummy-project-1.3.5-20181203.fc29.iso"
+    "iso/dummy-project/4.3.0-2018123114/el7/dummy-project-4.3.0-2018123114.el7.iso"
+    "iso/dummy-project/4.3.0-2019010101/fc28/dummy-project-4.3.0-2019010101.fc28.iso"
+)
+
 EXPECTED_ISO_MD5_PATH="${EXPECTED_ISO_PATH}.md5sum"
 EXPECTED_ISO_SIG_PATH="${EXPECTED_ISO_MD5_PATH}.sig"
 ISO_BADPATH="fixtures/dummy-project-without-version.iso"

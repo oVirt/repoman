@@ -38,6 +38,7 @@ LATEST_3_UNEXPECTED_PATHS=(
 LATEST_4_RPMS_EXPECTED_PATHS=(
     rpm/fc21/x86_64/unsigned_rpm-1.1-1.fc21.x86_64.rpm
     iso/dummy-project/1.4/dummy-project-1.4.iso
+    iso/dummy-project/1.3.5-20181203/fc29/dummy-project-1.3.5-20181203.fc29.iso
     rpm/fc21/SRPMS/unsigned_rpm-1.1-1.fc21.src.rpm
 )
 LATEST_4_RPMS_UNEXPECTED_PATHS=(

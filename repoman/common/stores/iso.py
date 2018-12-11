@@ -34,7 +34,9 @@ from ..artifact import (
 logger = logging.getLogger(__name__)
 
 
-ISO_REGEX = r'(.*/)?(?P<name>[^\d/]+).(?P<version>\d[^/]*)\.iso'
+ISO_REGEX = \
+    r'(.*/)?(?P<name>[^\d/]+).(?P<version>\d[^fc|el]*)'\
+    r'(?P<distro>\.(fc|el)\d+)?\.iso'
 
 
 class WrongIsoError(Exception):
@@ -54,6 +56,9 @@ class Iso(Artifact):
             )
         self._name = nv_match.groupdict().get('name')
         self._version = nv_match.groupdict().get('version')
+        self._distro = nv_match.groupdict().get('distro')
+        if self._distro:
+            self._distro = self._distro.rsplit('.')[1]
         super(Iso, self).__init__(
             path=path,
             temp_dir=temp_dir,
@@ -76,11 +81,19 @@ class Iso(Artifact):
         package the same content or one of them is wrongly generated (the
         version was not bumped or something).
         """
-        return '%s(%s %s)' % (self.type, self.name, self.version)
+        if self.distro:
+            return '%s(%s %s %s)' %\
+                (self.type, self.name, self.version, self.distro)
+        else:
+            return '%s(%s %s)' % (self.type, self.name, self.version)
 
     @property
     def version(self):
         return self._version
+
+    @property
+    def distro(self):
+        return self._distro
 
     @property
     def extension(self):
@@ -89,6 +102,24 @@ class Iso(Artifact):
     @property
     def type(self):
         return 'iso'
+
+    def generate_path(self):
+        """
+        Returns the theoretical path that the iso should be, instead of the
+        current path it is. As explained at the module docs.
+        """
+        if self.distro:
+            return '{name}/{version}/{distro}/{name}-{version}.{distro}.iso'\
+                .format(
+                    name=self.name,
+                    version=self.version,
+                    distro=self.distro,
+                )
+        else:
+            return '{name}/{version}/{name}-{version}.iso'.format(
+                name=self.name,
+                version=self.version,
+            )
 
     def sign(self, key, passwd):
         with open(self.path + '.md5sum', 'w') as md5_fd:
