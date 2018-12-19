@@ -11,11 +11,16 @@ RUN yum -y install bats \
                    make \
                    openssl-devel \
                    python-dulwich \
+                   python-flake8 \
                    python-tox \
                    rpm-sign \
                    tree \
                    which \
-&& yum clean all
+                   python-pip \
+&& yum upgrade \
+&& yum clean all \
+&& pip install --upgrade pip \
+&& pip install --upgrade tox
 
 ENV HOME=/mnt
 WORKDIR /mnt
