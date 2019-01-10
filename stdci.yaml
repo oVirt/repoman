@@ -5,5 +5,4 @@ stage:
   - build-artifacts
 distro:
   - el7
-  - fc27
   - fc28
