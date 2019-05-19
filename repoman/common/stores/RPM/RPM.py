@@ -151,7 +151,7 @@ class RPM(Artifact):
                 stdout=subprocess.PIPE,
                 stderr=devnull,
             ).communicate()[0]
-        match = re.search("Key ID (?P<key_id>\w+)\\n", output)
+        match = re.search(r"Key ID (?P<key_id>\w+)\\n", output)
         self.key_hex = None
         if match:
             self.key_hex = match.groupdict()['key_id'].upper()
