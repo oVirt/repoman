@@ -1,7 +1,6 @@
 import os
 import logging
 
-import six
 from six.moves import StringIO
 from six.moves import configparser as cp
 from six import itervalues, iteritems
