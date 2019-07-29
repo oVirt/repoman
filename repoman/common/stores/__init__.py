@@ -4,6 +4,7 @@ from abc import (
     abstractmethod,
     abstractproperty,
 )
+import six
 from ..utils import get_plugins
 
 
@@ -14,22 +15,23 @@ logger = logging.getLogger(__name__)
 STORES = {}
 
 
-class ArtifactStore(object):
-    class __metaclass__(ABCMeta):
-        def __init__(cls, name, bases, attrs):
-            """
-            Metaclass in charge of the registering, inherits from ABCMeta
-            because ArtifactStore is an abstract class too.
-            """
-            ABCMeta.__init__(cls, name, bases, attrs)
-            # Don't register this base class
-            if name != 'ArtifactStore':
-                STORES[name] = cls
+class ArtfactStoreMeta(ABCMeta):
+    def __init__(cls, name, bases, attrs):
+        """
+        Metaclass in charge of the registering, inherits from ABCMeta
+        because ArtifactStore is an abstract class too.
+        """
+        ABCMeta.__init__(cls, name, bases, attrs)
+        # Don't register this base class
+        if name != 'ArtifactStore':
+            STORES[name] = cls
 
+
+@six.add_metaclass(ArtfactStoreMeta)
+class ArtifactStore(object):
     def __init__(self, config, artifacts):
         self.config = config
         self.artifacts = artifacts
-        super(ArtifactStore, self).__init__()
 
     @classmethod
     def get_conf_section(cls):

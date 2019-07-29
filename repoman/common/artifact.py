@@ -54,9 +54,8 @@ from .utils import sign_detached
 logger = logging.getLogger(__name__)
 
 
+@six.add_metaclass(ABCMeta)
 class Artifact(object):
-    __metaclass__ = ABCMeta
-
     def __init__(self, path, temp_dir='/tmp', verify_ssl=True):
         """
         :param path: Path or url to the artifact

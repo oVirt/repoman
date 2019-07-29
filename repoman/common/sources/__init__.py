@@ -4,8 +4,7 @@ from abc import (
     abstractmethod,
     abstractproperty,
 )
-
-
+import six
 from ..utils import get_plugins
 
 
@@ -16,18 +15,19 @@ logger = logging.getLogger(__name__)
 SOURCES = {}
 
 
-class ArtifactSource(object):
-    class __metaclass__(ABCMeta):
-        def __init__(cls, name, bases, attrs):
-            ABCMeta.__init__(cls, name, bases, attrs)
-            # Don't register this base class
-            if name != 'ArtifactSource':
-                SOURCES[name] = cls
+class ArtifactSourceMeta(ABCMeta):
+    def __init__(cls, name, bases, attrs):
+        ABCMeta.__init__(cls, name, bases, attrs)
+        # Don't register this base class
+        if name != 'ArtifactSource':
+            SOURCES[name] = cls
 
+
+@six.add_metaclass(ArtifactSourceMeta)
+class ArtifactSource(object):
     def __init__(self, config, stores):
         self.config = config
         self.stores = stores
-        super(ArtifactSource, self).__init__()
 
     @abstractproperty
     def DEFAULT_CONFIG(self):
