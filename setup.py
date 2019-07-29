@@ -38,7 +38,7 @@ def get_version():
 
     elif os.path.exists('scripts/version_manager.py'):
         version = check_output(
-            ['scripts/version_manager.py', '.', 'version']
+            ['python', 'scripts/version_manager.py', '.', 'version']
         ).strip()
 
     if version is None:

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Allows you to define a jenkins build job url as a source:
 

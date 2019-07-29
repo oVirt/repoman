@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 This program is a helper to repo management
 

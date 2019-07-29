@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # encoding:utf-8
 """
 This module holds the class and methods to manage an rpm store and it's

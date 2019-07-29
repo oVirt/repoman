@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Parse a url, recursively or not.
 

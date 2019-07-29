@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 When specifying a source for an artifact, you have to do it in this format::
 

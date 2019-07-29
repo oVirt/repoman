@@ -1,4 +1,3 @@
-#!/usr/bin/env python%
 # encoding: utf-8
 """
 This module holds the helper classes to represent an artifact list::
