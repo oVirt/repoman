@@ -11,9 +11,9 @@ import re
 
 
 import requests
-from urlparse import (
+from six.moves.urllib.parse import (
     urljoin,
-    urlsplit,
+    urlsplit
 )
 
 
