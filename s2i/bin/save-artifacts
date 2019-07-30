@@ -1,0 +1,8 @@
+#!/bin/sh -e
+#
+# S2I save-artifacts script for the 'repoman-centos7' image.
+# The save-artifacts script streams a tar archive to standard output.
+# The archive contains the files and folders you want to re-use in the next build.
+#
+cd "$REPO_BASE"
+tar cf - ./*

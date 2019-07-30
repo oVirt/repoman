@@ -1,0 +1,94 @@
+#!/bin/bash -e
+#
+# S2I assemble script for the 'repoman-centos7' image.
+# The 'assemble' script builds your application source so that it is ready to run.
+#
+# For more information refer to the documentation:
+#	https://github.com/openshift/source-to-image/blob/master/docs/builder_image.md
+#
+
+if [[ "$DEBUG" == true ]]; then
+    set -x
+fi
+
+# If the 'repoman-centos7' assemble script is executed with the '-h' flag, print the usage.
+if [[ "$1" == "-h" ]]; then
+    exec /usr/libexec/s2i/usage
+fi
+
+# Add final repo as a collection source so that if we're using built image as a
+# builder image, we keep existing packages
+echo "$REPO_PATH" > "${REPO_CONF}.collect"
+
+# If its an incremental build, use the sources list from the previous build as a
+# starting point, and include the repo from the previous build as a source
+if [[ -r /tmp/artifacts/repoman_sources.lst ]]; then
+    echo "---> Restoring previous build sources..."
+    mv -f /tmp/artifacts/repoman_sources.lst "$REPO_CONF"
+    echo /tmp/artifacts/repo >> "${REPO_CONF}.collect"
+fi
+
+# If there is no repoman_sources.lst file in the source, we're not gonna run
+# repoman
+if ! [[ -r /tmp/src/repoman_sources.lst ]]; then
+    echo "---> No repoman_sources.lst file in source code, exiting build"
+    exit 1
+fi
+
+# We support either s2i incremental build, or layering builds of this container
+# on top of one another, so previous repoman_sources.lst can come from either
+# the previous build artifacts or already be in the image
+if [[ -r "$REPO_CONF" ]]; then
+    echo "---> Found $REPO_CONF from previous build, skipping existing artifacts"
+    # Remove any sources we already saw from the new sources list so repoman
+    # will only download packages it did now download before
+    # In case the new source does not include any actually new sources, grep
+    # might return a failure status, so we need to ignore it.
+    grep -vxFf "$REPO_CONF" /tmp/src/repoman_sources.lst \
+        >> "${REPO_CONF}.collect" \
+        || :
+    # Update the sources list with the new sources, to prevent the list from
+    # growing indefinitely, we first remove comments and references for sources
+    # we're going to add from it. If adding a jenkins builds, we also remove
+    # builds for the same job.
+    {
+        grep -Evxf <(
+            sed -r \
+                -e '/^#/d' \
+                -e '/^jenkins:/s/[0-9]+/[0-9]+/' \
+                -e '$a^(#.*|$)' \
+                /tmp/src/repoman_sources.lst
+        ) "$REPO_CONF" || :
+        grep -Ev '^(#|$)' /tmp/src/repoman_sources.lst || :
+    } > "${REPO_CONF}.new"
+    mv -f "${REPO_CONF}.new" "$REPO_CONF"
+else
+    cat /tmp/src/repoman_sources.lst >> "${REPO_CONF}.collect"
+    # We just collect all the sources we ever see in $REPO_CONF so we don't download
+    # any of them more then once. Since we keep the $REPO_CONF file in the
+    # image, we strip comments and blanks to keep it small
+    grep -Ev '^(#|$)' /tmp/src/repoman_sources.lst || : >> "$REPO_CONF"
+fi
+
+echo "---> Collecting artifacts with repoman..."
+repoman \
+    --temp-dir generate-in-repo \
+    --option main.on_empty_source=warn \
+    --option=store.RPMStore.on_wrong_distro=copy_to_all \
+    --option=store.RPMStore.with_srcrpms=false \
+    --option=store.RPMStore.with_sources=false \
+    "${REPO_PATH}.collect" \
+    add conf:"${REPO_CONF}.collect"
+
+echo "---> Removing older artifacts with repoman..."
+rm -rf "${REPO_PATH:?}/"*
+repoman \
+    --temp-dir generate-in-repo \
+    --option main.on_empty_source=warn \
+    --option=store.RPMStore.on_wrong_distro=copy_to_all \
+    --option=store.RPMStore.with_srcrpms=false \
+    --option=store.RPMStore.with_sources=false \
+    "$REPO_PATH" \
+    add "${REPO_PATH}.collect:latest"
+
+rm -rf "${REPO_CONF}.collect" "${REPO_PATH}.collect"

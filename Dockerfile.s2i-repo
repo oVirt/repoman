@@ -1,0 +1,68 @@
+# repoman-centos7
+FROM centos/httpd-24-centos7
+
+# TODO: Put the maintainer name in the image metadata
+LABEL maintainer="Barak Korren <bkorren@redhat.com>"
+
+# TODO: Rename the builder environment variable to inform users about application you provide them
+ENV REPOMAN_VERSION="1.0" \
+    SUMMARY="Setup a repo with repoman and serve over HTTP" \
+    DESCRIPTION="This container is meant to be used as an s2i base container. \
+As part of the build process it would collect a set of packages using \
+`repoman` and generate a `yum` repository containing them stored within the \
+container image. Runnig the resulting container would cause it to expose said \
+repo via HTTP."
+ENV REPO_BASE="/var/lib/repoman"
+ENV REPO_PATH="$REPO_BASE/repo"
+ENV REPO_CONF="$REPO_BASE/repoman_sources.lst"
+
+# TODO: Set labels used in OpenShift to describe the builder image
+LABEL summary="$SUMMARY" \
+      description="$DESCRIPTION" \
+      io.k8s.description="$DESCRIPTION" \
+      io.k8s.display-name="Repoman builder $REPOMAN_VERSION" \
+      io.openshift.expose-services="8080:http" \
+      io.openshift.tags="builder,httpd,repoman"
+
+USER 0
+
+RUN yum -y install epel-release \
+    && yum -y install createrepo_c \
+                   which \
+                   gcc \
+                   koji \
+                   libffi-devel \
+                   make \
+                   openssl-devel \
+                   python-dulwich \
+                   python-virtualenv \
+                   rpm-sign \
+                   python-pip \
+    && yum clean all \
+    && sed \
+      -e \
+      "/^DocumentRoot/s%\"${HTTPD_DATA_ORIG_PATH}/html\"%\"\${REPO_PATH}\"%" \
+      -e \
+      "/^<Directory /s%\"${HTTPD_DATA_ORIG_PATH}/html\"%\"\${REPO_PATH}\"%" \
+      -i \
+      "${HTTPD_MAIN_CONF_PATH}/httpd.conf" \
+    && rm -f "${HTTPD_MAIN_CONF_D_PATH}/welcome.conf" \
+    && install -m 775 -d "$REPO_BASE" "$REPO_PATH"
+
+COPY requirements.txt build-requirements.txt /opt/repoman/
+RUN virtualenv --system-site-packages /opt/repoman_venv \
+    && source /opt/repoman_venv/bin/activate \
+    && pip install -U pip \
+    && pip install -r /opt/repoman/requirements.txt \
+                   -r /opt/repoman/build-requirements.txt
+
+COPY . /opt/repoman/
+RUN source /opt/repoman_venv/bin/activate \
+    && pip install -e /opt/repoman \
+    && deactivate \
+    && chmod -R u+rwX,go+rXrX /opt/repoman \
+    && ln -s /opt/repoman_venv/bin/repoman /usr/local/bin/repoman
+
+COPY ./s2i/bin/ /usr/libexec/s2i
+
+USER 1001

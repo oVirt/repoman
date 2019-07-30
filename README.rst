@@ -59,3 +59,73 @@ runs, it is convenient to reuse a single container with an interactive shell::
 
 This will give you a shell and you can then run 'tox' there or do whatever else
 is necessary.
+
+Repo hosting container Image
+============================
+
+Along with repoman itself, this repo also provides a container image that uses
+repoman to build a package repository and then shares it over HTTP. This image
+is meant to be used as a builder image along with with OpenShift's
+source-to-image (s2i) tool to build repository container images.
+
+Building the repoman builder Image
+----------------------------------
+
+To build the builder image using Docker, the following command can be used:
+
+    docker build . -f Dockerfile.s2i-repo -t repoman-repo-centos7
+
+Building a repo container
+-------------------------
+
+To build a repo container using the builder image one need to first create a
+directory containing a file called ``repoman_sources.lst``. That files should
+contain a list of ``repoman`` sources to be included in the repo.
+
+Once the file is ready the following command can be used to build the repo
+container image (Assuning the directory was created at
+``~/src/repoman_sources``)::
+
+    s2i build ~/src/repoman_sources/ repoman-repo-centos7 my_repo
+
+Given the command above the container will be created as ``my_repo``.
+
+Incremental and layered builds
+------------------------------
+
+The repo container builder image provides two ways to add or update packges in
+an existing repo container image:
+
+Layered builds
+  When using layered builds, we tak an existing repo container image and add a
+  layer on top of it with the new packages included. The main benefit of this
+  approach is in conserving disk space and bandwidth for machines that work with
+  multiple versions of the same repo at the same time, or when pushing updates
+  to a repo. The main shortcoming of this approach is that the images can only
+  grow, since we keep adding layers, and removing packages does not free any
+  space.
+
+Incremental builds
+  Incremental builds leverage the s2i incremental build feature to create a new
+  container image while avoiding the need to re-download repo artifacts by
+  copying then from and older image at build time. The benefit of this approach
+  is that we can get smaller container images when compared to layered images
+  because we don't keep older layers around, but the overall disk space usage
+  can end up being greater if we have multiple versions of the same repo in the
+  same machine.
+
+Example: To perform a layered build to add packages to an older repo container
+image called ``my_repo`` so that we get a new image called ``my_repo:new`` we
+run the following command (We assume the sources file was changed to include new
+packages))::
+
+    s2i build ~/src/repoman_sources/ my_repo my_repo:new
+
+(In the example above, note that the older image is a used as the builder image
+and not the ``repoman-repo-centos7`` image)
+
+To perform an incremental build to add packages to the ``my_repo`` container
+image so that we get a new image of the same name with the new packages added,
+we run the following command::
+
+    s2i build --incremental ~/src/repoman_sources/ repoman-repo-centos7 my_repo
