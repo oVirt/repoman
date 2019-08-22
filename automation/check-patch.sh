@@ -2,11 +2,6 @@
 
 source "automation/python.sh"
 
-if rpm --eval "%dist" | grep -qFi 'el6'; then
-    # On EL6 there's no python2.7
-    sed -i "s:python2.7:python2.6:" tox.ini
-fi
-
 ${PYTHON} -m pip install --upgrade pip
 # currently need to add a specific version of tox
 # the newer versions 4.14.1 and  3.14.2 fails on
@@ -29,13 +24,13 @@ trap save_logs EXIT
 echo "######################################################################"
 echo "#  Unit/static checks"
 echo "#"
-tox
+tox -e pep8,syspy,${PYTHON/thon}
 echo "# Unit/static OK"
 echo "######################################################################"
 echo "######################################################################"
 echo "#  Functional tests"
 echo "#"
-tox -e functional
+tox -e functional-${PYTHON/thon}
 echo "#"
 echo "# Functional OK"
 echo "######################################################################"
