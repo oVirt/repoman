@@ -24,12 +24,19 @@ class NotSamePackage(Exception):
 
 
 def get_gpg(homedir=os.path.expanduser('~/.gnupg'), use_agent=False):
-    try:
-        # older gnupg
-        gpg = gnupg.GPG(gnupghome=homedir, use_agent=use_agent)
-    except TypeError:
-        gpg = gnupg.GPG(homedir=homedir, use_agent=use_agent)
-    return gpg
+    # Try to init gnupg twice - once as-is ans a 2nd time with the homedir
+    # created
+    for c in range(2):
+        try:
+            try:
+                # older gnupg
+                gpg = gnupg.GPG(gnupghome=homedir, use_agent=use_agent)
+            except TypeError:
+                gpg = gnupg.GPG(homedir=homedir, use_agent=use_agent)
+            return gpg
+        except ValueError:
+            os.makedirs(homedir)
+    raise
 
 
 def gpg_load_key(key_path, gpg=None):
@@ -386,11 +393,7 @@ def sign_detached(src_dir, key, passphrase=None):
     oldpath = os.getcwd()
     if not src_dir.startswith('/'):
         src_dir = oldpath + '/' + src_dir
-    try:
-        # older gnupg
-        gpg = gnupg.GPG(gnupghome=os.path.expanduser('~/.gnupg'))
-    except TypeError:
-        gpg = gnupg.GPG(homedir=os.path.expanduser('~/.gnupg'))
+    gpg = get_gpg()
     with open(key) as key_fd:
         skey = gpg.import_keys(key_fd.read())
     fprint = skey.results[0]['fingerprint']
