@@ -9,8 +9,8 @@ import logging
 import os
 import sys
 import six
+from six import itervalues, iteritems
 from getpass import getpass
-
 
 from .common.repo import Repo
 from .common import (  # noqa
@@ -82,7 +82,7 @@ def add_add_artifact_parser(parent_parser):
             'conf:stdin wil read the sources from stdin'
             + ', '.join(
                 ', '.join(source.formats_list())
-                for source in sources.SOURCES.itervalues()
+                for source in itervalues(sources.SOURCES)
             )
         )
     )
@@ -151,10 +151,10 @@ def parse_args():
     )
     parser.add_argument(
         '-s', '--stores', required=False,
-        default=','.join(stores.STORES.keys()),
+        default=','.join(stores.STORES),
         help=(
             'Store classes to take into account when loading the repo. '
-            'Available ones are %s' % ', '.join(stores.STORES.keys())
+            'Available ones are %s' % ', '.join(stores.STORES)
         )
     )
     parser.add_argument(
@@ -420,7 +420,7 @@ def do_show_docs(args):
         print(
             '\nAvailable %s:\n' % args.subject
         ) + '\n'.join(
-            '  * ' + key for key in elements_dict.keys()
+            '  * ' + key for key in elements_dict
         )
     else:
         element = getattr(
@@ -439,7 +439,7 @@ def do_show_docs(args):
 
 
 def format_conf_options(conf_dict):
-    return '\n'.join('    %s = %s' % item for item in conf_dict.iteritems())
+    return '\n'.join('    %s = %s' % item for item in iteritems(conf_dict))
 
 
 def main():

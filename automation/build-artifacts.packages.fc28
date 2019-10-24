@@ -7,3 +7,5 @@ python2-setuptools
 python3-setuptools
 dnf
 dnf-utils
+python2-future
+python3-future

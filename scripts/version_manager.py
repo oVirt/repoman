@@ -4,7 +4,7 @@ import datetime
 import os
 import re
 import sys
-
+from six import iteritems
 
 from collections import defaultdict
 
@@ -76,7 +76,7 @@ def get_tags(repo):
     return dict(
         (commit, os.path.basename(tag_ref))
         for tag_ref, commit
-        in repo.get_refs().items()
+        in iteritems(repo.get_refs())
         if tag_ref.startswith('refs/tags/')
         and VALID_TAG.match(tag_ref[len('refs/tags/'):])
     )
@@ -84,9 +84,9 @@ def get_tags(repo):
 
 def get_refs(repo):
     refs = defaultdict(set)
-    for ref, commit in repo.get_refs().items():
-        refs[commit].add(commit)
-        refs[commit].add(ref)
+    refs.update(
+        {commit: {commit, ref}
+            for commit, ref in iteritems(repo.get_refs())})
     return refs
 
 

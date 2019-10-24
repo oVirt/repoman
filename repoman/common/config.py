@@ -1,8 +1,10 @@
 import os
 import logging
 
+import six
 from six.moves import StringIO
 from six.moves import configparser as cp
+from six import itervalues, iteritems
 
 from .stores import STORES
 from .filters import FILTERS
@@ -45,11 +47,11 @@ class BadConfigError(Exception): pass  # flake8: noqa
 
 def update_conf_from_plugin(config, plugins, prefix):
     # load all the configs from the sotres, on their sections
-    for plugin in plugins.itervalues():
+    for plugin in itervalues(plugins):
         conf_section = prefix + '.' + plugin.CONFIG_SECTION
         if not config.has_section(conf_section):
             config.add_section(conf_section)
-        for opt_name, opt_value in plugin.DEFAULT_CONFIG.iteritems():
+        for opt_name, opt_value in iteritems(plugin.DEFAULT_CONFIG):
             if not config.has_option(conf_section, opt_name):
                 config.set(conf_section, opt_name, opt_value)
             else:

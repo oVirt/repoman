@@ -21,3 +21,4 @@ cryptography>=2.3
 # Non-python dependencies
 #createrepo_c
 #rpm-sign
+future

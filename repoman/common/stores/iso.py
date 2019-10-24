@@ -16,6 +16,7 @@ This module holds the class and methods to manage an iso store::
 import os
 import re
 import logging
+from six import iteritems
 from getpass import getpass
 from . import ArtifactStore
 from ..utils import (
@@ -279,16 +280,16 @@ class IsoStore(ArtifactStore):
             doing anything.
         """
         new_isos = ArtifactList(self.artifacts)
-        for name, versions in self.artifacts.iteritems():
+        for name, versions in iteritems(self.artifacts):
             if len(versions) <= keep:
                 continue
             to_keep = ArtifactName()
             for _ in range(keep):
                 latest = versions.get_latest()
                 to_keep.update(latest)
-                versions.pop(latest.keys()[0])
+                versions.next(iter(latest))
             new_isos[name] = to_keep
-            for version in versions.keys():
+            for version in versions:
                 logger.info('Deleting %s version %s', name, version)
                 versions.del_version(version, noop)
         self.artifacts = new_isos

@@ -19,6 +19,7 @@ from functools import wraps
 
 import tempfile
 import atexit
+from six import itervalues, iteritems
 
 from . import utils
 from .parser import Parser
@@ -108,10 +109,10 @@ class Repo(object):
                     repo_path=self.path
                 )
             )
-            for (key, val) in STORES.iteritems()
+            for (key, val) in iteritems(STORES)
             if key in self.stores or 'all' in self.stores
         ])
-        self.config.set('stores', ', '.join(self.stores.keys()))
+        self.config.set('stores', ', '.join(self.stores))
         self.parser = Parser(
             config=self.config,
             stores=self.stores,
@@ -173,7 +174,7 @@ class Repo(object):
         logger.info('Resolving artifact source %s', artifact_source)
         artifact_paths = self.parser.parse(artifact_source)
         for artifact_path in artifact_paths:
-            for store in self.stores.itervalues():
+            for store in itervalues(self.stores):
                 if store.handles_artifact(artifact_path):
                     store.add_artifact(artifact_path)
                     self.added_artifacts.append(artifact_path)
@@ -196,7 +197,7 @@ class Repo(object):
         """
         Realize all the changes made so far
         """
-        for store in self.stores.itervalues():
+        for store in itervalues(self.stores):
             store.save()
 
     @loaded
@@ -210,7 +211,7 @@ class Repo(object):
         if not num_to_keep:
             return
         removed = []
-        for store in self.stores.itervalues():
+        for store in itervalues(self.stores):
             for artifact in store.get_all_but_latest(num=num_to_keep):
                 removed.append(artifact)
                 if not noop:
@@ -232,7 +233,7 @@ class Repo(object):
         """
         clean_suffix = utils.sanitize_file_name(suffix)
         if self.loaded:
-            for store in self.stores.values():
+            for store in itervalues(self.stores):
                 store.change_path(store.path + clean_suffix)
 
         self.path += clean_suffix
@@ -268,7 +269,7 @@ class Repo(object):
             self.load()
 
         for added_artifact in self.added_artifacts:
-            for store in self.stores.itervalues():
+            for store in itervalues(self.stores):
                 if store.handles_artifact(added_artifact):
                     logger.debug('Readding artifact %s', added_artifact)
                     store.add_artifact(added_artifact)

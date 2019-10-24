@@ -13,7 +13,8 @@ from . import (
     sources,
     filters,
 )
-
+from six import iteritems
+from future.utils import listvalues
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,13 @@ class Parser(object):
             (
                 cname,
                 cls(
-                    stores=stores.values(),
+                    stores=listvalues(stores),
                     config=config.get_section(
                         section='filter.' + cls.CONFIG_SECTION,
                     )
                 )
             )
-            for cname, cls in filters.FILTERS.iteritems()
+            for cname, cls in iteritems(filters.FILTERS)
             if cname in self.filters or 'all' in self.filters
         ])
         self.sources = config.getarray('sources')
@@ -45,13 +46,13 @@ class Parser(object):
             (
                 cname,
                 cls(
-                    stores=stores.values(),
+                    stores=listvalues(stores),
                     config=config.get_section(
                         section='source.' + cls.CONFIG_SECTION,
                     )
                 )
             )
-            for cname, cls in sources.SOURCES.iteritems()
+            for cname, cls in iteritems(sources.SOURCES)
             if cname in self.sources or 'all' in self.sources
         ])
 
@@ -65,7 +66,7 @@ class Parser(object):
         :rtype: list of strings
         """
         art_list = set()
-        for stuple in self.sources.iteritems():
+        for stuple in iteritems(self.sources):
             aname = stuple[0]
             source = stuple[1]
             source_str = full_source_str
@@ -87,7 +88,7 @@ class Parser(object):
             prev_filters_str = ''
             while filters_str and filters_str != prev_filters_str:
                 prev_filters_str = filters_str
-                for fname, fclass in self.filters.iteritems():
+                for fname, fclass in iteritems(self.filters):
                     logger.info('Filtering filter %s with %s',
                                 filters_str, fname)
                     result = fclass.filter(

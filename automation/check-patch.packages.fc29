@@ -25,6 +25,8 @@ python2-testrepository
 python3-testrepository
 python2-devel
 python3-devel
+python2-future
+python3-future
 redhat-lsb-core
 rpm-sign
 tree

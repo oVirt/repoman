@@ -46,6 +46,8 @@ from abc import ABCMeta
 from abc import abstractproperty
 
 import six
+from six import itervalues
+from future.utils import listvalues
 
 from .utils import cmpfullver
 from .utils import download
@@ -201,7 +203,7 @@ class ArtifactVersion(dict, object):
         arts = []
         logger.debug('ArtifactVersion::regmatch=%s', regmatch)
         logger.debug('ArtifactVersion::fmatch=%s', fmatch)
-        for inode in self.itervalues():
+        for inode in itervalues(self):
             logger.debug(
                 'ArtifactVersion::Iterating ArtifactInode %s',
                 inode,
@@ -230,7 +232,7 @@ class ArtifactName(dict, object):
             artifact.ver_rel in self or
             next(
                 (
-                    ver for ver in self.keys()
+                    ver for ver in self
                     if cmpfullver(ver, artifact.version) >= 0
                 ),
                 None,
@@ -250,7 +252,7 @@ class ArtifactName(dict, object):
             return None
         if not num:
             num = len(self)
-        sorted_list = self.keys()
+        sorted_list = list(self)
         sorted_list.sort(cmp=cmpfullver)
         latest = {}
         if num > len(sorted_list):
@@ -261,13 +263,13 @@ class ArtifactName(dict, object):
 
     def delete_version(self, version, noop=False):
         if version in self:
-            for inode in self[version].keys():
+            for inode in list(self[version]):
                 self[version].delete_inode(inode, noop=noop)
             self.pop(version)
 
     def delete(self, noop=False):
         for version in self:
-            for inode in self[version].keys():
+            for inode in list(self[version]):
                 self[version].delete_inode(inode, noop=noop)
             self.pop(version)
 
@@ -277,9 +279,9 @@ class ArtifactName(dict, object):
         logger.debug('ArtifactName::fmatch=%s', fmatch)
         logger.debug('ArtifactName::latest=%s', latest)
         if latest:
-            versions = self.get_latest(num=latest).values()
+            versions = list(itervalues(self.get_latest(num=latest)))
         else:
-            versions = self.values()
+            versions = listvalues(self)
         for version in versions:
             logger.debug(
                 'ArtifactName::Iterating ArtifactVersion %s',
@@ -329,7 +331,7 @@ class ArtifactList(dict, object):
         Deletes all the artifacts in this list
         """
         for name in self:
-            for version in self[name].keys():
+            for version in list(self[name]):
                 self[name].delete_version(version)
             self.pop(name)
 
@@ -347,7 +349,7 @@ class ArtifactList(dict, object):
         logger.debug('ArtifactVersion::regmatch=%s', regmatch)
         logger.debug('ArtifactVersion::fmatch=%s', fmatch)
         logger.debug('ArtifactVersion::latest=%s', latest)
-        for name in self.itervalues():
+        for name in itervalues(self):
             logger.debug(
                 'ArtifactList::Iterating ArtifactName %s',
                 name,
