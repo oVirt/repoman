@@ -48,6 +48,8 @@ from abc import abstractproperty
 import six
 from six import itervalues
 
+from functools import cmp_to_key
+
 from .utils import cmpfullver
 from .utils import download
 from .utils import sign_detached
@@ -252,7 +254,7 @@ class ArtifactName(dict, object):
         if not num:
             num = len(self)
         sorted_list = list(self)
-        sorted_list.sort(cmp=cmpfullver)
+        sorted_list.sort(key=cmp_to_key(cmpfullver))
         latest = {}
         if num > len(sorted_list):
             num = len(sorted_list)

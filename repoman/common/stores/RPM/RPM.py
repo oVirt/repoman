@@ -47,6 +47,8 @@ import os
 import re
 import subprocess
 
+from functools import cmp_to_key
+
 import six
 
 import pexpect
@@ -353,7 +355,7 @@ class RPMName(ArtifactName):
                 fmatch=lambda art: not art.is_source
             )
         ]
-        sorted_list.sort(cmp=cmpfullver)
+        sorted_list.sort(key=cmp_to_key(cmpfullver))
         latest = {}
         if num > len(sorted_list):
             num = len(sorted_list)
