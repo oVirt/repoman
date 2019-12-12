@@ -9,7 +9,12 @@ fi
 if rpm --eval "%dist" | grep -qFi 'el7'; then
     # tox on el7 is too old
     pip install --upgrade pip
-    pip install --upgrade tox
+    # currently need to add a specific version of tox
+    # the newer versions 4.14.1 and  3.14.2 fails on
+    # ERROR: Cannot uninstall 'virtualenv'. It is a distutils installed project
+    # and thus we cannot accurately determine which files belong to it which
+    # would lead to only a partial uninstall.
+    pip install --upgrade tox==3.14.0
 fi
 
 mkdir -p exported-artifacts
@@ -67,4 +72,3 @@ EOR
 echo "#"
 echo "# Report generated"
 echo "######################################################################"
-
