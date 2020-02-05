@@ -73,13 +73,13 @@ def pretty_commit(commit, version=''):
 
 
 def get_tags(repo):
-    return dict(
-        (commit, os.path.basename(tag_ref))
-        for tag_ref, commit
-        in iteritems(repo.get_refs())
-        if tag_ref.startswith('refs/tags/')
-        and VALID_TAG.match(tag_ref[len('refs/tags/'):])
-    )
+    tags = {}
+    for tag_ref, commit in iteritems(repo.get_refs()):
+        tag_ref = tag_ref.decode('utf-8')
+        if tag_ref.startswith('refs/tags/') \
+           and VALID_TAG.match(tag_ref[len('refs/tags/'):]):
+            tags[commit] = os.path.basename(tag_ref)
+    return tags
 
 
 def get_refs(repo):
@@ -186,17 +186,18 @@ def get_version(repo_path):
 
     for entry in repo.get_walker(reverse=True):
         commit = entry.commit
-        commit_sha = commit.sha().hexdigest()
+        commit_sha = commit.sha().hexdigest().encode('utf-8')
+        message = commit.message.decode('utf-8')
         if commit_sha in tags:
             maj_version, feat_version = tags[commit_sha].split('.')
             maj_version = int(maj_version)
             feat_version = int(feat_version)
             fix_version = 0
-        elif MAJOR_HEADER.search(commit.message):
+        elif MAJOR_HEADER.search(message):
             maj_version += 1
             feat_version = 0
             fix_version = 0
-        elif FEAT_HEADER.search(commit.message):
+        elif FEAT_HEADER.search(message):
             feat_version += 1
             fix_version = 0
         else:
