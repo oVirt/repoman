@@ -20,4 +20,3 @@ rpm-sign
 tree
 yum
 yum-utils
-python-future

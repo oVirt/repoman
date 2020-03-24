@@ -14,7 +14,6 @@ from . import (
     filters,
 )
 from six import iteritems
-from future.utils import listvalues
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ class Parser(object):
             (
                 cname,
                 cls(
-                    stores=listvalues(stores),
+                    stores=list(stores.values()),
                     config=config.get_section(
                         section='filter.' + cls.CONFIG_SECTION,
                     )
@@ -46,7 +45,7 @@ class Parser(object):
             (
                 cname,
                 cls(
-                    stores=listvalues(stores),
+                    stores=list(stores.values()),
                     config=config.get_section(
                         section='source.' + cls.CONFIG_SECTION,
                     )

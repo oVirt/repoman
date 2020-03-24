@@ -47,7 +47,6 @@ from abc import abstractproperty
 
 import six
 from six import itervalues
-from future.utils import listvalues
 
 from .utils import cmpfullver
 from .utils import download
@@ -281,7 +280,7 @@ class ArtifactName(dict, object):
         if latest:
             versions = list(itervalues(self.get_latest(num=latest)))
         else:
-            versions = listvalues(self)
+            versions = list(self.values())
         for version in versions:
             logger.debug(
                 'ArtifactName::Iterating ArtifactVersion %s',

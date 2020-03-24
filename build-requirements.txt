@@ -2,4 +2,3 @@ pbr>=0.8.2
 # Moved to requirements.txt to allow pyOpenSSL to install
 #setuptools<=33.1.1
 dulwich
-future

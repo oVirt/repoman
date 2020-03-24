@@ -2,4 +2,3 @@ configparser
 pycodestyle
 pytest
 coverage
-future
