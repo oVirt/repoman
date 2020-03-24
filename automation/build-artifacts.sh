@@ -23,11 +23,6 @@ EXTRA_SPECS[rpm-sign]='
 Requires: rpm-sign
 %endif
 '
-EXTRA_SPECS[argparse]='
-%if ( 0%{?fedora} && 0%{?fedora} <= 25 ) || 0%{?rhel} == 6
-Requires: python-argparse
-%endif
-'
 
 EXTRA_SPECS[koji]='
 %if ( 0%{?fedora} && 0%{?fedora} <= 24 ) || 0%{?rhel} == 6
