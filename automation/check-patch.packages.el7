@@ -14,6 +14,7 @@ python-pycodestyle
 python-setuptools
 python-testrepository
 python-tox
+python2-six
 redhat-lsb-core
 rpm-python
 rpm-sign
