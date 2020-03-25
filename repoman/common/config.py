@@ -210,7 +210,7 @@ class Config(object):
             for option in self.config.options(section):
                 my_str += "%s = %s\n" % (
                     option,
-                    self.config.get(section, option, ''),
+                    self.config.get(section, option),
                 )
 
         my_str += '\n'
