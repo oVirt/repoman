@@ -377,7 +377,7 @@ def sign_file(gpg, fname, keyid, passphrase, detach=True):
             fname,
             signature.stderr
         )
-    with open(fname + '.sig', 'w') as sfd:
+    with open(fname + '.sig', 'wb') as sfd:
         sfd.write(signature.data)
 
 

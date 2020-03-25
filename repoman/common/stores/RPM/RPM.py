@@ -149,7 +149,7 @@ class RPM(Artifact):
                 ["rpm", "-qip", path],
                 stdout=subprocess.PIPE,
                 stderr=devnull,
-            ).communicate()[0]
+            ).communicate()[0].decode('utf-8')
         match = re.search(r"Key ID (?P<key_id>\w+)\\n", output)
         self.key_hex = None
         if match:

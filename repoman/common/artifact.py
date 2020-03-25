@@ -111,7 +111,7 @@ class Artifact(object):
         Lazy md5 calculation.
         """
         if self._md5 is None:
-            with open(self.path) as fdno:
+            with open(self.path, 'rb') as fdno:
                 self._md5 = hashlib.md5(fdno.read()).hexdigest()
         return self._md5
 
