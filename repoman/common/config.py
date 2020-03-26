@@ -38,10 +38,11 @@ verify_ssl = true
 on_empty_source = fail
 """
 
-logger = logging.getLogger(__name__ )  # flake8: noqa
+logger = logging.getLogger(__name__)
 
 
-class BadConfigError(Exception): pass  # flake8: noqa
+class BadConfigError(Exception):
+    pass
 
 
 def update_conf_from_plugin(config, plugins, prefix):
