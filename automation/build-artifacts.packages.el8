@@ -1,0 +1,8 @@
+git
+libffi-devel
+openssl-devel
+python3-dulwich
+python3-setuptools
+python3-six
+dnf
+dnf-utils

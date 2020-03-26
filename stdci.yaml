@@ -5,3 +5,4 @@ stage:
   - build-artifacts
 distro:
   - el7
+  - el8
