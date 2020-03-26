@@ -1,6 +1,7 @@
 import setuptools
 import subprocess
 import os
+import sys
 
 
 def check_output(args):
@@ -38,7 +39,7 @@ def get_version():
 
     elif os.path.exists('scripts/version_manager.py'):
         version = check_output(
-            ['python', 'scripts/version_manager.py', '.', 'version']
+            [sys.executable, 'scripts/version_manager.py', '.', 'version']
         ).strip()
 
     if version is None:

@@ -1,40 +1,52 @@
 #!/bin/bash -e
+
+source "automation/python.sh"
+
 # If the rpm requirement name should not get python- appended put in this
 # array
 SAME_RPM_NAME=(
-    'pyOpenSSL'
-    'python-rpm'
-    'python-gnupg'
     'createrepo_c'
-    'rpm-python'
     'rpm-sign'
 )
 # If instead of automatically adding it you want to add a spec snippet yourself
 # add it here
 declare -A EXTRA_SPECS
-EXTRA_SPECS[pexpect]='
-%if 0%{?fedora} >= 1
-Requires: python-pexpect
-%else
+
+EXTRA_SPECS[pexpect]="
+%if 0%{?rhel} == 7
 Requires: pexpect
-%endif
-'
-
-EXTRA_SPECS[koji]='
-%if ( 0%{?fedora} && 0%{?fedora} <= 24 ) || 0%{?rhel} == 6
-Requires: koji
 %else
-Requires: python-koji
+Requires: ${PYTHON}-pexpect
 %endif
-'
+"
 
-EXTRA_SPECS[cryptography]='
-%if 0%{?rhel} == 6
-Requires: python-crypto
+EXTRA_SPECS[dulwich]="
+%if 0%{?rhel} == 7
+BuildRequires: python-dulwich
 %else
-Requires: python-cryptography
+BuildRequires: ${PYTHON}-dulwich
 %endif
-'
+"
+
+EXTRA_SPECS[rpm-python]="
+%if 0%{?rhel} == 7
+Requires: rpm-python
+%else
+Requires: ${PYTHON}-rpm
+%endif
+"
+
+EXTRA_SPECS[python-gnupg]="
+Requires: ${PYTHON}-gnupg
+"
+
+EXTRA_SPECS[pyOpenSSL]="
+%if 0%{?rhel} == 7
+Requires: pyOpenSSL
+%else
+Requires: ${PYTHON}-pyOpenSSL
+%endif
+"
 
 is_in() {
     local what="${1?}"
@@ -77,7 +89,7 @@ rm -Rf \
 
 # Custom hacks to get the correct spec file
 # to add the dist, and the requirements
-python setup.py bdist_rpm --spec-only
+${PYTHON} setup.py bdist_rpm --spec-only --python=${PYTHON}
 
 sed -i \
   -e 's/Release: \(.*\)/Release: \1%{?dist}/' \
@@ -97,7 +109,7 @@ for requirement in $(grep -v -e '^\s*# ' requirements.txt); do
     else
         sed \
             -i \
-            -e "s/Url: \(.*\)/Url: \1\nRequires:python-$requirement/" \
+            -e "s/Url: \(.*\)/Url: \1\nRequires:${PYTHON}-$requirement/" \
             dist/repoman.spec
     fi
 done
@@ -115,13 +127,13 @@ for requirement in $(grep -v -e '^\s*#' build-requirements.txt); do
     else
         sed \
             -i \
-            -e "s/Url: \(.*\)/Url: \1\nBuildRequires:python-$requirement/" \
+            -e "s/Url: \(.*\)/Url: \1\nBuildRequires:${PYTHON}-$requirement/" \
             dist/repoman.spec
     fi
 done
 
 # generate tarball
-python setup.py sdist
+${PYTHON} setup.py sdist
 
 # install build-requires
 yum-builddep dist/repoman.spec
