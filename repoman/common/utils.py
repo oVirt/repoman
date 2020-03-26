@@ -34,7 +34,7 @@ def get_gpg(homedir=os.path.expanduser('~/.gnupg'), use_agent=False):
                 gpg = gnupg.GPG(homedir=homedir, use_agent=use_agent)
             return gpg
         except ValueError:
-            os.makedirs(homedir)
+            os.makedirs(homedir, mode=0o700)
     raise
 
 
