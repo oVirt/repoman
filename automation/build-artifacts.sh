@@ -7,6 +7,7 @@ SAME_RPM_NAME=(
     'python-gnupg'
     'createrepo_c'
     'rpm-python'
+    'rpm-sign'
 )
 # If instead of automatically adding it you want to add a spec snippet yourself
 # add it here
@@ -16,11 +17,6 @@ EXTRA_SPECS[pexpect]='
 Requires: python-pexpect
 %else
 Requires: pexpect
-%endif
-'
-EXTRA_SPECS[rpm-sign]='
-%if 0%{?fedora} || 0%{?rhel} >= 7
-Requires: rpm-sign
 %endif
 '
 
