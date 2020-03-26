@@ -4,6 +4,7 @@ load helpers
 load common_vars
 load utils
 
+HAS_GNUPG2="$(rpm -qa gnupg2)"
 SUITE_NAME=stores.rpm
 
 
@@ -212,6 +213,10 @@ EOC
 }
 
 @test "stores.rpm: Add and sign one rpm" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -234,6 +239,10 @@ EOC
 
 
 @test "stores.rpm: Add and sign one srpm" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -256,6 +265,10 @@ EOC
 
 
 @test "stores.rpm: Add an unsigned srpm, and sign with sign-rpms" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -284,6 +297,10 @@ EOC
 
 
 @test "stores.rpm: Add an unsigned srpm, and sign with sign-artifacts" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -312,6 +329,10 @@ EOC
 
 
 @test "stores.rpm: Add and sign one srpm with src generation" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -378,6 +399,10 @@ EOC
 
 
 @test "stores.rpm: generate-src extracts sources from existing artifacts" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     export COVERAGE_FILE="$BATS_TEST_DIRNAME/coverage.$BATS_TEST_NAME"
     repo="$BATS_TMPDIR/myrepo"
@@ -726,6 +751,10 @@ EOC
 
 
 @test "store.rpm: Add and sign multiple rpms (same rpm with multiple distros and other rpms)" {
+    if [[ ${HAS_GNUPG2} ]]; then
+        skip "gnupg2 is unsupported atm"
+    fi
+
     local repo
     local rpm
     load utils
