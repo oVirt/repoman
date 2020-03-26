@@ -1,21 +1,22 @@
 #!/bin/bash -e
 
+source "automation/python.sh"
 
 if rpm --eval "%dist" | grep -qFi 'el6'; then
     # On EL6 there's no python2.7
     sed -i "s:python2.7:python2.6:" tox.ini
 fi
 
-if rpm --eval "%dist" | grep -qFi 'el7'; then
-    # tox on el7 is too old
-    pip install --upgrade pip
-    # currently need to add a specific version of tox
-    # the newer versions 4.14.1 and  3.14.2 fails on
-    # ERROR: Cannot uninstall 'virtualenv'. It is a distutils installed project
-    # and thus we cannot accurately determine which files belong to it which
-    # would lead to only a partial uninstall.
-    pip install --upgrade tox==3.14.0
-fi
+${PYTHON} -m pip install --upgrade pip
+# currently need to add a specific version of tox
+# the newer versions 4.14.1 and  3.14.2 fails on
+# ERROR: Cannot uninstall 'virtualenv'. It is a distutils installed project
+# and thus we cannot accurately determine which files belong to it which
+# would lead to only a partial uninstall.
+${PYTHON} -m pip install --upgrade tox==3.14.0
+
+# on el8 pip installs to /usr/local/bin
+export PATH="${PATH}:/usr/local/bin/"
 
 mkdir -p exported-artifacts
 
