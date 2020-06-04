@@ -270,7 +270,7 @@ def download(path, dest_path, tries=3, verify=True):
             ']\r' + '    %['
         )
     sys.stdout.flush()
-    with open(dest_path, 'w') as rpm_fd:
+    with open(dest_path, 'wb') as rpm_fd:
         for chunk in stream.iter_content(chunk_size=chunk_size):
             if chunk:
                 rpm_fd.write(chunk)
