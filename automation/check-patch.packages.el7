@@ -5,7 +5,11 @@ gnupg
 koji
 libffi-devel
 openssl-devel
+pexpect
 pytest
+python2-cryptography
+python2-gnupg
+python2-six
 python-dulwich
 python-flake8
 python-pbr
@@ -14,8 +18,6 @@ python-pycodestyle
 python-setuptools
 python-testrepository
 python-tox
-python2-six
-redhat-lsb-core
 rpm-python
 rpm-sign
 tree

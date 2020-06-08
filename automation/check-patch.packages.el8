@@ -19,6 +19,5 @@ python3-rpm
 python3-setuptools
 python3-six
 python3-testrepository
-redhat-lsb-core
 rpm-sign
 tree

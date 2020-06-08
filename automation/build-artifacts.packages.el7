@@ -1,8 +1,11 @@
 git
 libffi-devel
 openssl-devel
+pexpect
+python2-cryptography
+python2-gnupg
+python2-six
 python-dulwich
 python-setuptools
-python2-six
 yum
 yum-utils
