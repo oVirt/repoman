@@ -438,13 +438,16 @@ def save_file(src_path, dst_path):
     copy(src_path, dst_path)
 
 
-def list_files(path, extension):
+def list_files(path, extension, ignore_links=False):
     '''Find all the files with the given extension under the given dir'''
     files_found = []
     for root, _, files in os.walk(path):
         for fname in files:
             if fname.endswith(extension):
-                files_found.append(root + '/' + fname)
+                full_path = os.path.join(root, fname)
+                if os.path.islink(full_path) and ignore_links is True:
+                    continue
+                files_found.append(full_path)
     return files_found
 
 
