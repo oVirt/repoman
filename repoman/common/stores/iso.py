@@ -179,7 +179,7 @@ class IsoStore(ArtifactStore):
             self.sign_passphrase = getpass('Key passphrase: ')
         if repo_path:
             logger.info('Loading repo %s', repo_path)
-            for iso in list_files(repo_path, '.iso'):
+            for iso in list_files(repo_path, '.iso', ignore_links=True):
                 self.add_artifact(
                     iso,
                     to_copy=False,
