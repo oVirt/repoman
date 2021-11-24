@@ -264,6 +264,7 @@ class RPM(Artifact):
                     'pass phrase: ',
                     'passphrase: ',
                     'Passphrase: ',
+                    pexpect.EOF,
                 ],
                 timeout=300,
             )
