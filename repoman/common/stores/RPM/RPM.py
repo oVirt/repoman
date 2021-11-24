@@ -265,7 +265,7 @@ class RPM(Artifact):
                     'passphrase: ',
                     'Passphrase: ',
                 ],
-                timeout=5,
+                timeout=300,
             )
         except Exception as exc:
             logging.error('Failed to sign')
