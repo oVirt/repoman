@@ -352,7 +352,7 @@ def extract_sources(rpm_path, dst_dir, with_patches=False):
 
 
 def sign_file(gpg, fname, keyid, passphrase, detach=True):
-    with open(fname) as f_desc:
+    with open(fname, mode='rb') as f_desc:
         try:
             # old gnupg
             signature = gpg.sign_func(
