@@ -60,7 +60,7 @@ from ...artifact import ArtifactName
 from ...artifact import ArtifactVersion
 from ...utils import cmpfullver
 from ...utils import download
-from ...utils import gpg_get_keyuid
+from ...utils import gpg_get_keyhex
 from ...utils import gpg_unlock
 
 
@@ -226,7 +226,7 @@ class RPM(Artifact):
     def sign(self, key_path, passwd):
         logging.info("SIGNING: %s", self.path)
         gpg = gpg_unlock(key_path, passphrase=passwd)
-        keyuid = gpg_get_keyuid(key_path, gpg=gpg)
+        keyuid = gpg_get_keyhex(key_path, gpg=gpg)
         # Remove any existing signature from the rpm before signing it.
         # This is needed because is a signature already exist, even whith our
         # signature, when installing it yum raise an error like:
