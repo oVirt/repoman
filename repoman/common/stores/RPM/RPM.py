@@ -259,15 +259,31 @@ class RPM(Artifact):
             env={"LC_ALL": "C"},
         )
         try:
-            child.expect(
+            match = child.expect(
                 [
+                    'exists. Overwrite',
                     'pass phrase: ',
                     'passphrase: ',
                     'Passphrase: ',
-                    pexpect.EOF,
+                    pexpect.EOF
                 ],
                 timeout=300,
             )
+            if match == 0:
+                logging.info('Performing cleanup from the last unclean run...')
+                child.sendline('y')
+                child.expect(
+                    [
+                        'pass phrase: ',
+                        'passphrase: ',
+                        'Passphrase: ',
+                        pexpect.EOF
+                    ],
+                    timeout=300,
+                )
+            else:
+                logging.info('System waits for password...')
+
         except Exception as exc:
             logging.error('Failed to sign')
             logging.debug(child)
