@@ -156,6 +156,11 @@ class RPM(Artifact):
         self.key_hex = None
         if match:
             self.key_hex = match.groupdict()['key_id'].upper()
+            logging.debug(
+                '{} signed with key with ID: {}'.format(path, self.key_hex)
+            )
+        else:
+            logging.debug('{} is unsigned'.format(path))
 
     @property
     def name(self):
